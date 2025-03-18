@@ -1,0 +1,12 @@
+[project]
+name = "sse-g22-p2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ruff>=0.11.0",
+]
+
+[tool.uv.workspace]
+members = ["test"]
