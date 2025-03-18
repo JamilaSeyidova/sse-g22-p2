@@ -11,26 +11,6 @@ class PieChart(tk.Frame):
         super().__init__(parent)
         self.df = df
         
-        # scroll_canvas = tk.Canvas(self.bar_content_frame)
-        # scrollbar_y = ttk.Scrollbar(self.bar_content_frame, orient="vertical", command=scroll_canvas.yview)
-        # scrollbar_x = ttk.Scrollbar(self.bar_content_frame, orient="horizontal", command=scroll_canvas.xview)
-        # scroll_canvas.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
-
-        # scroll_canvas.grid(row=0, column=0, sticky="nsew")
-        # scrollbar_y.grid(row=0, column=1, sticky="ns", padx=(0, 10))
-        # scrollbar_x.grid(row=1, column=0, columnspan=2, sticky="ew")
-
-        # self.bar_content_frame.columnconfigure(0, weight=1)
-        # self.bar_content_frame.rowconfigure(0, weight=1)
-
-        # scrollable_frame = ttk.Frame(scroll_canvas)
-        # scrollable_frame.bind(
-        #     "<Configure>",
-        #     lambda e: scroll_canvas.configure(scrollregion=scroll_canvas.bbox("all"))
-        # )
-
-        # scroll_canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        
         ttk.Label(self, text="Select Experiment:").pack(pady=(10, 0))
         self.pie_exp_var = tk.StringVar()
         self.pie_exp_dropdown = ttk.Combobox(self, textvariable=self.pie_exp_var, state="readonly")
@@ -80,3 +60,4 @@ class PieChart(tk.Frame):
         self.pie_canvas = FigureCanvasTkAgg(fig, master=self)
         self.pie_canvas.draw()
         self.pie_canvas.get_tk_widget().pack(pady=10, fill='both', expand=True)
+        plt.close(fig)

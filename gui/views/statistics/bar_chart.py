@@ -160,6 +160,7 @@ class BarChart(tk.Frame):
         self.bar_canvas = FigureCanvasTkAgg(fig, master=self.bar_chart_frame)
         self.bar_canvas.draw()
         self.bar_canvas.get_tk_widget().pack(pady=10, fill='both', expand=True)
+        plt.close(fig)
 
     def _plot_table(self, sum_data):
         for row in self.table.get_children():
