@@ -13,3 +13,6 @@ class HomeView(tk.Frame):
         # Navigation Buttons
         statistics_btn = ttk.Button(self, text="Go to Statistics", command=lambda: controller.show_frame("StatisticsView"))
         statistics_btn.pack(pady=10)
+        
+        settings_btn = ttk.Button(self, text="Go to Settings", command=lambda: controller.show_frame("SettingsView"))
+        settings_btn.pack(pady=10)
