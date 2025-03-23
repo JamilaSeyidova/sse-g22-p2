@@ -47,16 +47,6 @@ def getTasks(repository: str):
             tasks.append(task)
     return tasks
 
-#def run_task(task, repository, output_dir):
-#    """
-#    Placeholder function to simulate running a single task.
-#    Replace or extend this function with the actual experiment code.
-#    """
-#    print(f"Running task: {task}\n")
-#    command = f"{energibridge_path} -o {output_dir} --summary cmd /c \"gradle {task}\""
-#    result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
-#    print(result)
-#    print(f"Finished task: {task}\n")
 
 def run_task(task, repository, output_dir):
     """
@@ -145,66 +135,3 @@ def run_experiment(repository, experiment_name, iterations, timeout_between_repe
     print(f"All results saved in: {experiment_dir}")
     
     return experiment_dir
-
-
-
-#def runTasks(tasks, repository):
-#    for task in tasks:
-#        print(f"Running task: {task}")
-#        
-#        #command = f"{energibridge_path} --summary cmd /c \"gradle {task}\" --iterations {iterations_entry.get()} --sleep {sleep_entry.get()} --interval {interval_entry.get()}"
-#        command = f"{energibridge_path} -o  --summary cmd /c \"gradle {task}\""
-#        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
-#        print(result)
-#            
-#            
-#def runTasks(tasks, repository, iterations=1, sleep=0, interval=0):
-#    # Crea una directory principale per l'esperimento con timestamp
-#    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-#    experiment_dir = os.path.join(os.getcwd(), "results", f"experiment_{timestamp}")
-#    
-#    # Assicurati che la directory principale esista
-#    os.makedirs(experiment_dir, exist_ok=True)
-#    
-#    results = []
-#    
-#    for task in tasks:
-#        print(f"Running task: {task}")
-#        
-#        # Crea una directory specifica per il task
-#        task_dir = os.path.join(experiment_dir, task.replace(':', '_'))
-#        os.makedirs(task_dir, exist_ok=True)
-#        
-#        # Aggiorna il comando per salvare l'output nella directory del task
-#        # L'opzione -o di energibridge specifica la directory di output
-#        command = f"{energibridge_path} -o {task_dir} --summary cmd /c \"gradle {task}\""
-#        
-#        print(f"Executing: {command}")
-#        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
-#        print(result)
-#        
-#        # Salva i risultati del comando in un file di log nel task_dir
-#        with open(os.path.join(task_dir, "command_output.log"), "w") as f:
-#            f.write(f"STDOUT:\n{result.stdout}\n\nSTDERR:\n{result.stderr}")
-#        
-#        results.append({
-#            "task": task,
-#            "directory": task_dir,
-#            "output": result.stdout,
-#            "error": result.stderr,
-#            "return_code": result.returncode
-#        })
-#    
-#    # Crea un file di riepilogo dell'esperimento
-#    with open(os.path.join(experiment_dir, "experiment_summary.txt"), "w") as f:
-#        f.write(f"Experiment run at: {timestamp}\n")
-#        f.write(f"Tasks executed: {len(tasks)}\n")
-#        f.write(f"Parameters: iterations={iterations}, sleep={sleep}, interval={interval}\n\n")
-#        
-#        for i, task_result in enumerate(results):
-#            f.write(f"Task {i+1}: {task_result['task']}\n")
-#            f.write(f"  Directory: {task_result['directory']}\n")
-#            f.write(f"  Return code: {task_result['return_code']}\n\n")
-#    
-#    print(f"Experiment results saved in: {experiment_dir}")
-#    return results, experiment_dir

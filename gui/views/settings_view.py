@@ -1,10 +1,11 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
+from tkinter import ttk, messagebox, filedialog
 
 import os
 import subprocess
 import re
+
+from logic.experiment_setup import find_gradle_build, run_experiment
 
 root = None
 repository = None
@@ -14,16 +15,8 @@ run_button = None
 energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
 
 
-
-def update_label():
-    label.config(text=f"Running energibridge...", foreground="#4CAF50")  # Green text
-    
-# Refactor out of UI
-def find_gradle_build(folder):
-    for root, _, files in os.walk(folder):
-        if "build.gradle" in files or "build.gradle.kts" in files:
-            return os.path.join(root, "build.gradle") if "build.gradle" in files else os.path.join(root, "build.gradle.kts")
-    return None
+def update_label(text:str):
+    label.config(text, foreground="#4CAF50")  # Green text
     
 def browse_folder():
     global repository
@@ -54,20 +47,47 @@ def getTasks():
             print(f"Found task: {task}")
             tasks.append(task)
     return tasks
-# Refactor out of UI
-def runTasks(tasks):
-    for task in tasks:
-        print(f"Running task: {task}")
-        #command = f"{energibridge_path} --summary cmd /c \"gradle {task}\" --iterations {iterations_entry.get()} --sleep {sleep_entry.get()} --interval {interval_entry.get()}"
-        command = f"{energibridge_path} --summary cmd /c \"gradle {task}\""
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
-        print(result)
-            
-            
-def runBridge():
-    tasks = getTasks()
-    runTasks(tasks)
-    update_label()
+
+def run_experiment_wrapper():
+    # Check if a Gradle project folder was selected
+    if not repository:
+        messagebox.showerror("Input Error", "Please select a valid Gradle project folder.")
+        return
+
+    # Retrieve values from the UI entries.
+    exp_name = exp_name_entry.get()
+    if not exp_name:
+        messagebox.showerror("Input Error", "Please enter an experiment name.")
+        return
+
+    try:
+        iterations = int(iterations_entry.get())
+    except ValueError:
+        messagebox.showerror("Input Error", "Number of iterations must be an integer.")
+        return
+
+    try:
+        timeout_rep = float(timeout_rep_entry.get())
+    except ValueError:
+        messagebox.showerror("Input Error", "Timeout between repetitions must be a number (seconds).")
+        return
+
+    try:
+        timeout_task = float(timeout_task_entry.get())
+    except ValueError:
+        messagebox.showerror("Input Error", "Timeout between tasks must be a number (seconds).")
+        return
+
+    warmup = bool(warmup_var.get())
+
+    update_label("Starting experiment...")
+
+    # Call the experiment logic with the provided parameters.
+    run_experiment(repository, exp_name, iterations, timeout_rep, timeout_task, warmup)
+
+    messagebox.showinfo("Experiment", "Experiment completed.")
+    update_label("Experiment completed.")
+
     
 
 class SettingsView(tk.Frame):
@@ -78,6 +98,7 @@ class SettingsView(tk.Frame):
         self.controller = controller
 
         global root, label, repository, run_button
+        global exp_name_entry, iterations_entry, timeout_rep_entry, timeout_task_entry, warmup_var
         # Main window
         # root = tk.Tk()
         # root.title("GradleBridge")
@@ -101,26 +122,35 @@ class SettingsView(tk.Frame):
         main_frame = ttk.Frame(root, style="TFrame", padding=20)
         main_frame.pack(expand=True, fill="both", anchor="center")
 
-        #Entries (fields)    
-        ttk.Label(self, text="Iterations:", style="TLabel").pack(pady=5)
-        iterations_entry = ttk.Entry(self, style="TEntry")
+        #Entries (fields)
+        ttk.Label(self, text="Experiment Name:", style="TLabel").pack(pady=5)
+        exp_name_entry = ttk.Entry(self, style="TEntry", width=30)
+        exp_name_entry.pack(pady=5)
+
+        ttk.Label(self, text="Number of Iterations:", style="TLabel").pack(pady=5)
+        iterations_entry = ttk.Entry(self, style="TEntry", width=10)
         iterations_entry.pack(pady=5)
 
-        ttk.Label(self, text="Sleep (seconds):", style="TLabel").pack(pady=5)
-        sleep_entry = ttk.Entry(self, style="TEntry")
-        sleep_entry.pack(pady=5)
+        ttk.Label(self, text="Timeout between repetitions (s):", style="TLabel").pack(pady=5)
+        timeout_rep_entry = ttk.Entry(self, style="TEntry", width=10)
+        timeout_rep_entry.pack(pady=5)
 
-        ttk.Label(self, text="Interval (seconds):", style="TLabel").pack(pady=5)
-        interval_entry = ttk.Entry(self, style="TEntry")
-        interval_entry.pack(pady=5)
+        ttk.Label(self, text="Timeout between tasks (s):", style="TLabel").pack(pady=5)
+        timeout_task_entry = ttk.Entry(self, style="TEntry", width=10)
+        timeout_task_entry.pack(pady=5)
 
-        #Buttons
+        # Checkbox for hardware warmup
+        warmup_var = tk.IntVar()
+        warmup_check = ttk.Checkbutton(self, text="Perform hardware warmup", variable=warmup_var)
+        warmup_check.pack(pady=5)
+
+        # Gradle project selection section
         browse_button = ttk.Button(self, text="Select Folder", command=browse_folder, style="browse.TButton")
-        browse_button.pack(side=tk.LEFT, expand=True)
-        
-        run_button = ttk.Button(self, text="Run", command=runBridge, style="run.TButton", state='disabled')
-        run_button.pack(side=tk.LEFT, expand=True)
+        browse_button.pack(side=tk.TOP, fill="x", pady=5)
 
+        # Run Experiment button
+        run_button = ttk.Button(self, text="Run Experiment", command=run_experiment_wrapper, style="run.TButton", state='disabled')
+        run_button.pack(side=tk.TOP, fill="x", pady=10)
         
         
         label = ttk.Label(self, text="", style="TLabel")
