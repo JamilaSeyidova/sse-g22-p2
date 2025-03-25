@@ -5,7 +5,7 @@ import os
 import subprocess
 import re
 
-from logic.experiment_setup import find_gradle_build, run_experiment
+from logic.experiment_setup import find_energibridge, find_gradle_build, run_experiment
 
 root = None
 repository = None
@@ -13,65 +13,54 @@ label = None
 run_button = None
 # Refactor out of UI
 energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
+energibridge_path = "D:\\University_tudelft_courses\\SSE\\EnergiBridge_repo\\target\\release\\energibridge.exe"
 
 
-def update_label(text:str):
-    label.config(text, foreground="#4CAF50")  # Green text
+#def update_label(text, color):
+#    label.config(text, foreground=color)  
+
+def update_label(t, color):
+     label.config(text=t, foreground=color)  # Green text
     
 def browse_folder():
-    global repository
     folder_selected = filedialog.askdirectory()
-    if folder_selected:
+    if folder_selected :
         gradle_file = find_gradle_build(folder_selected)
         if gradle_file:
             label.config(text=f"Found: {gradle_file}")
-            repository = folder_selected
             run_button.config(state='normal')  
         else:
             label.config(text="gradle.build file not found")
-            repository = None
             run_button.config(state='disabled')
-            
-# Refactor out of UI        
-def getTasks():
-    command = f"gradle build --rerun-tasks --dry-run"
-    result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
-    print("hi")
-    regex = re.compile(r"^:(\S+) SKIPPED")
-    tasks = []
 
-    for line in result.stdout.splitlines():
-        match = regex.match(line)
-        if match:
-            task = match.group(1) 
-            print(f"Found task: {task}")
-            tasks.append(task)
-    return tasks
+def browse_folder_energibridge():
+    folder_selected = filedialog.askdirectory()
+    if folder_selected:
+        energibridge_path = find_energibridge(folder_selected)
+        if energibridge_path:
+            label.config(text=f"Found: {energibridge_path}")
+            run_button.config(state='normal')
+        else:
+            label.config(text="energibridge.exe not found")
+            run_button.config(state='disabled')
+                  
 
 def run_experiment_wrapper():
-    # Check if a Gradle project folder was selected
-    if not repository:
-        messagebox.showerror("Input Error", "Please select a valid Gradle project folder.")
-        return
-
     # Retrieve values from the UI entries.
     exp_name = exp_name_entry.get()
     if not exp_name:
         messagebox.showerror("Input Error", "Please enter an experiment name.")
         return
-
     try:
         iterations = int(iterations_entry.get())
     except ValueError:
         messagebox.showerror("Input Error", "Number of iterations must be an integer.")
         return
-
     try:
         timeout_rep = float(timeout_rep_entry.get())
     except ValueError:
         messagebox.showerror("Input Error", "Timeout between repetitions must be a number (seconds).")
         return
-
     try:
         timeout_task = float(timeout_task_entry.get())
     except ValueError:
@@ -80,13 +69,13 @@ def run_experiment_wrapper():
 
     warmup = bool(warmup_var.get())
 
-    update_label("Starting experiment...")
+    update_label(f"Starting experiment...", color="#2196F3") # Blue color
 
     # Call the experiment logic with the provided parameters.
-    run_experiment(repository, exp_name, iterations, timeout_rep, timeout_task, warmup)
+    run_experiment(exp_name, iterations, timeout_rep, timeout_task, warmup)
 
     messagebox.showinfo("Experiment", "Experiment completed.")
-    update_label("Experiment completed.")
+    update_label(f"Experiment completed.", color="#4CAF50") # Green color
 
     
 
@@ -97,7 +86,7 @@ class SettingsView(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        global root, label, repository, run_button
+        global root, label, run_button
         global exp_name_entry, iterations_entry, timeout_rep_entry, timeout_task_entry, warmup_var
         # Main window
         # root = tk.Tk()
@@ -145,8 +134,11 @@ class SettingsView(tk.Frame):
         warmup_check.pack(pady=5)
 
         # Gradle project selection section
-        browse_button = ttk.Button(self, text="Select Folder", command=browse_folder, style="browse.TButton")
+        browse_button = ttk.Button(self, text="Select Gradle Project", command=browse_folder, style="browse.TButton")
         browse_button.pack(side=tk.TOP, fill="x", pady=5)
+
+        enerB_button = ttk.Button(self, text="Select EnergiBridge Directory", command=browse_folder_energibridge, style="browse.TButton")
+        enerB_button.pack(side=tk.TOP, fill="x", pady=5)
 
         # Run Experiment button
         run_button = ttk.Button(self, text="Run Experiment", command=run_experiment_wrapper, style="run.TButton", state='disabled')
