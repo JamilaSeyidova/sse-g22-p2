@@ -5,7 +5,11 @@ import time
 import datetime
 import random
 
-energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
+from config import SYSTEM, ENERGIBRIDGE_PATH, CPU_TYPE
+from logic.experiment_summary import get_latest_experiment_folder, extract_and_append_summary
+
+
+# energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
 
 def find_gradle_build(folder):
     for root, _, files in os.walk(folder):
@@ -56,14 +60,28 @@ def run_task(task, repository, output_dir):
     
     # Assicurati che la directory esista
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Normalizza il percorso usando solo backslash per Windows
-    normalized_output_dir = output_dir.replace('/', '\\')
-    print(f"Normalized output directory: {normalized_output_dir}")
-    
-    # Usa citazioni per percorsi con spazi
-    command = f'"{energibridge_path}" -o "{normalized_output_dir}\\results.csv" --summary cmd /c "gradle {task}"'
-    
+
+    # # Normalizza il percorso usando solo backslash per Windows
+    # normalized_output_dir = output_dir.replace('/', '\\')
+    # print(f"Normalized output directory: {normalized_output_dir}")
+    #
+    # # Usa citazioni per percorsi con spazi
+    # command = f'"{ENERGIBRIDGE_PATH}" -o "{normalized_output_dir}\\results.csv" --summary cmd /c "gradle {task}"'
+
+    # Normalize output path
+    results_file = os.path.join(output_dir, "results.csv")
+
+    # Build the command based on platform
+    if SYSTEM == "Windows":
+        results_file = results_file.replace('/', '\\')  # Also Windows-style
+        command = f'"{ENERGIBRIDGE_PATH}" -o "{results_file}" --summary cmd /c "gradle {task}"'
+    else:
+        # macOS or Linux
+        command = f'"{ENERGIBRIDGE_PATH}" -o "{results_file}" --summary gradle {task}'
+
+    print(f"Running command: {command}")
+
+
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
         
@@ -116,7 +134,8 @@ def run_experiment(repository, experiment_name, iterations, timeout_between_repe
         for i in range(iterations):
             iteration_number = i + 1
             # Crea una directory specifica per l'iterazione
-            iteration_dir = os.path.join(task_dir, f"iterazione{iteration_number}")
+            # iteration_dir = os.path.join(task_dir, f"iterazione{iteration_number}")
+            iteration_dir = os.path.join(task_dir, f"{iteration_number}")
             os.makedirs(iteration_dir, exist_ok=True)
             
             print(f"Iteration {iteration_number}/{iterations} for task: {task}")
@@ -133,5 +152,7 @@ def run_experiment(repository, experiment_name, iterations, timeout_between_repe
     
     print("=== Experiment completed. ===")
     print(f"All results saved in: {experiment_dir}")
+
+    extract_and_append_summary(experiment_dir)
     
     return experiment_dir

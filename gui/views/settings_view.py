@@ -2,21 +2,26 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
 import os
+import platform
 import subprocess
 import re
 
 from logic.experiment_setup import find_gradle_build, run_experiment
+from config import ENERGIBRIDGE_PATH
+
 
 root = None
 repository = None
 label = None
 run_button = None
 # Refactor out of UI
-energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
+# energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
+
 
 
 def update_label(text:str):
-    label.config(text, foreground="#4CAF50")  # Green text
+    label.config(text=text, foreground="#4CAF50")
+    # label.config(text, foreground="#4CAF50")  # Green text
     
 def browse_folder():
     global repository
