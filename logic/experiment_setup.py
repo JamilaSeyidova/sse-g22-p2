@@ -4,6 +4,8 @@ import os
 import time
 import datetime
 import random
+import threading
+import queue
 
 energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
 
@@ -80,14 +82,16 @@ def run_task(task, repository, output_dir):
     except Exception as e:
         print(f"Error running task: {str(e)}")
         return None
+    
 
-def run_experiment(repository, experiment_name, iterations, timeout_between_repetitions, timeout_between_tasks, warmup):
+
+def run_experiment(repository, experiment_name, iterations, timeout_between_repetitions, timeout_between_tasks, warmup, tasks, message_queue):
     """
     Run an experiment with the given configuration.
     """
     # Crea un timestamp per l'esperimento
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    
+
     # Crea la directory principale dell'esperimento
     base_dir = os.path.join(repository, "experiment_results")  # Salva in repository
     experiment_dir = os.path.join(base_dir, f"{experiment_name}_{timestamp}")
@@ -102,7 +106,7 @@ def run_experiment(repository, experiment_name, iterations, timeout_between_repe
         warmup_hardware()
     
     # Get tasks from the repository
-    tasks = getTasks(repository)
+    #tasks = getTasks(repository)
     
     # Run experiments for each task
     for task in tasks:
@@ -133,5 +137,5 @@ def run_experiment(repository, experiment_name, iterations, timeout_between_repe
     
     print("=== Experiment completed. ===")
     print(f"All results saved in: {experiment_dir}")
-    
+    message_queue.put("Experiment completed.")
     return experiment_dir
