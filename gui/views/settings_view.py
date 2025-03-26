@@ -7,11 +7,7 @@ import re
 import threading
 import queue
 
-from logic.experiment_setup import find_gradle_build, run_experiment
-
-
-
-
+from logic.experiment_setup import find_energibridge, find_gradle_build, getTasks, run_experiment
     
 
 class SettingsView(tk.Frame):
@@ -28,9 +24,6 @@ class SettingsView(tk.Frame):
     vars_dict = None
     running = False
     message_queue = queue.Queue()
-    # Refactor out of UI
-    #energibridge_path = os.path.join(os.getcwd(), "energibridge", "energibridge.exe")
-    
     
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -126,15 +119,15 @@ class SettingsView(tk.Frame):
         browse_button = ttk.Button(self, text="Select Folder", command=self.browse_folder, style="browse.TButton")
         browse_button.pack(side=tk.TOP, fill="x", pady=5)
 
+        enerB_button = ttk.Button(self, text="Select EnergiBridge Directory", command=self.browse_folder_energibridge, style="browse.TButton")
+        enerB_button.pack(side=tk.TOP, fill="x", pady=5)
+
         # Run Experiment button
         self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper, style="run.TButton", state='disabled')
         self.run_button.pack(side=tk.TOP, fill="x", pady=10)
         
-        
         self.label = ttk.Label(self, text="", style="TLabel")
         self.label.pack(pady=20)
-        
-        #root.mainloop()
         
     def update_label(self, text:str):
         self.label.config(text=text, foreground="#4CAF50")  # Green text
@@ -142,34 +135,27 @@ class SettingsView(tk.Frame):
         
     def browse_folder(self):
         folder_selected = filedialog.askdirectory()
-        if folder_selected:
+        if folder_selected :
             gradle_file = find_gradle_build(folder_selected)
             if gradle_file:
                 self.label.config(text=f"Found: {gradle_file}")
-                self.repository = folder_selected
-                if not self.running:
-                    self.run_button.config(state='normal')  
-                self.updateTaskList()
+                self.updateTaskList() 
             else:
                 self.label.config(text="gradle.build file not found")
-                self.repository = None
+                self.run_button.config(state='disabled')
+
+    def browse_folder_energibridge(self):
+        folder_selected = filedialog.askdirectory()
+        if folder_selected:
+            energibridge_path = find_energibridge(folder_selected)
+            if energibridge_path:
+                self.label.config(text=f"Found: {energibridge_path}")
+                if not self.running:
+                    self.run_button.config(state='normal')
+            else:
+                self.label.config(text="energibridge.exe not found")
                 self.run_button.config(state='disabled')
                 
-    # Refactor out of UI        
-    def getTasks(self):
-        command = f"gradle build --rerun-tasks --dry-run"
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=self.repository)
-        print("hi")
-        regex = re.compile(r"^:(\S+) SKIPPED")
-        tasks = []
-
-        for line in result.stdout.splitlines():
-            match = regex.match(line)
-            if match:
-                task = match.group(1) 
-                print(f"Found task: {task}")
-                tasks.append(task)
-        return tasks
     
     def getEnabledTasks(self):
         enabled_tasks = []
@@ -182,10 +168,6 @@ class SettingsView(tk.Frame):
         # Check if a Gradle project folder was selected
         if (self.running):
             messagebox.showerror("Input Error", "Experiment already running.")
-            return
-        
-        if not self.repository:
-            messagebox.showerror("Input Error", "Please select a valid Gradle project folder.")
             return
 
         # Retrieve values from the UI entries.
@@ -229,10 +211,8 @@ class SettingsView(tk.Frame):
         self.update_label("Running experiment...")
 
         # Call the experiment logic with the provided parameters.
-        
-        
         threading.Thread(target=run_experiment
-                        , args=(self.repository, exp_name, iterations, timeout_rep, timeout_task, warmup, enabled_tasks, self.message_queue), daemon=True).start()
+                        , args=(exp_name, iterations, timeout_rep, timeout_task, warmup, enabled_tasks, self.message_queue), daemon=True).start()
 
         self.check_result()
 
@@ -241,15 +221,13 @@ class SettingsView(tk.Frame):
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
         self.task_dict = {}
-        task_list = self.getTasks()
+        task_list = getTasks()
         for task in task_list:
             var = tk.IntVar(value=1)
             self.task_dict[task] = var
             chk = ttk.Checkbutton(self.scrollable_frame, text=task, variable=var, style="TCheckbutton")
             chk.pack(anchor="nw", fill="both")
-        self.update_idletasks()
-        
-        
+        self.update_idletasks()        
        
 
     def check_result(self):
