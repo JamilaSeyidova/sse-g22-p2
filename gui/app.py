@@ -9,7 +9,7 @@ class App(tk.Tk):
         super().__init__()
         self.title("GRADLENERGY GUI")
         self.geometry("800x600")
-        self.minsize(600, 400)
+        self.minsize(int(self.winfo_screenwidth() * 0.5), int(self.winfo_screenheight() * 0.7))
 
         self.container = tk.Frame(self)
         self.container.pack(fill="both", expand=True)
