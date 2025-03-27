@@ -21,68 +21,102 @@ class SettingsView(tk.Frame):
     vars_dict = None
     running = False
     message_queue = queue.Queue()
+
+    HELP_TEXTS = {
+         "iterations": "Repeating the experiment improves measurement reliability.\nRecommended: 30+ iterations for statistical significance.",
+         "timeout_repetitions": "Rest between repetitions helps stabilize system temperature and avoids tail energy consumption.\nRecommended: 60 seconds depending on task duration and computational intesity.",
+         "timeout_tasks": "Pause between tasks prevents overlap and system noise during measurements of different tasks.\nRecommended: 5 minutes depending on task duration and computational intesity.\nIn case of timeout > 120s, another warmup session is executed.",
+         "warmup": "Perform a warmup run to stabilize hardware temperature avoiding bias from cooler initial runs.\nBest practice: run CPU-intensive tasks, in our case 5 minutes of Fibonacci sequence.",
+         "system_precautions": 
+         """ Zen Mode:
+         - all applications should be closed, notifications should be turned off;
+         - only the required hardware should be connected (avoid USB drives, external disks, external displays, etc.);
+         - turn off notifications;
+         - remove any unnecessary services running in the background (e.g., web server, file sharing, etc.);
+         - if you do not need an internet or intranet connection, switch off your network;
+         - prefer cable over wireless: the energy consumption from a cable connection is more stable than from a wireless connection.
+         
+         \nFreeze and report your settings:
+         - Fix screen brightness/resolution.
+         - Fix energy settings (e.g., disable screen saver, sleep mode, etc.).
+ 
+         \nKeep it cool:
+         - Run experiments in a stable-temperature room.
+         - If not possible, consider logging temperature and discarding outliers."""
+     }
     
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
 
-        # Main window
-        # root = tk.Tk()
-        # root.title("GradleBridge")
-        # #root.geometry("800x500")
-        # root.configure(bg="#f8f9fa")
-
-        #Style
+        # Style configurations
         style = ttk.Style()
         style.theme_use("clam")  # Alternative themes: "alt", "default", "classic"
         style.configure("TFrame", background="#f8f9fa")
         style.configure("TLabel", font=("Arial", 14, "bold"), background="#f8f9fa", foreground="#333")
         style.configure("TEntry", font=("Arial", 12), padding=5)
         style.configure("run.TButton", font=("Arial", 12, "bold"), background="#4CAF50", foreground="white", padding=10)
-        #style.map("run.TButton", background=[("active", "#45a049")]) 
         style.map("run.TButton", background=[("disabled", "#e0e0e0"), ("active", "#45a049")], foreground=[("disabled", "gray")])
 
         style.configure("browse.TButton", font=("Arial", 12, "bold"), background="#2196F3", foreground="white", padding=10)
-        style.map("browse.TButton", background=[("active", "#1976D2")])  # Darker blue when hovered
-        
-        style.configure("TCheckbutton",
-                        font=("Arial", 12),
-                        foreground="#333",  # Text color
-                        background="white",
-                        padding=0,
-                        width=20)
+        style.map("browse.TButton", background=[("active", "#1976D2")])
 
-        style.map("TCheckbutton",
-                  foreground=[("!selected", "#ff5733"), ("selected", "#33adff")])
+        style.configure("TCheckbutton", font=("Arial", 12), foreground="#333", background="white", padding=0, width=20)
+        style.map("TCheckbutton", foreground=[("!selected", "#000000"), ("selected", "#33adff")])
 
+        style.configure("help.TButton", font=("Arial", 10, "bold"), padding=5, foreground="#ffffff", background="#2196F3", relief="flat")
+        style.map("help.TButton", background=[("active", "#1976D2")], foreground=[("disabled", "gray")])
 
+        # Header frame with title and home button
+        header_frame = ttk.Frame(self, style="TFrame")
+        header_frame.pack(side="top", fill="x", padx=10, pady=(10, 20))
+
+        label = ttk.Label(header_frame, text="Settings View", font=("Helvetica", 18, "bold"), style="TLabel")
+        label.pack(side="left")
+
+        home_btn = ttk.Button(header_frame, text="Back to Home", command=lambda: controller.show_frame("HomeView"),)
+        home_btn.pack(side="right")
+
+        # Main content frame
         main_frame = ttk.Frame(self, style="TFrame", padding=20)
         main_frame.pack(expand=True, fill="both", anchor="center")
 
-        #Entries (fields)
+        ttk.Button(self, text="System Setup Tips", style="help.TButton", command=lambda: self.show_help("System Precautions", self.HELP_TEXTS["system_precautions"])).pack(pady=5)
+
+        # Entries (fields)
         ttk.Label(self, text="Experiment Name:", style="TLabel").pack(pady=5)
         self.exp_name_entry = ttk.Entry(self, style="TEntry", width=30)
         self.exp_name_entry.pack(pady=5)
+    
 
-        ttk.Label(self, text="Number of Iterations:", style="TLabel").pack(pady=5)
-        self.iterations_entry = ttk.Entry(self, style="TEntry", width=10)
+        frame1 = ttk.Frame(self)
+        frame1.pack(pady=5)
+        ttk.Label(frame1, text="Number of Iterations:", style="TLabel").pack(side="left")
+        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Number of iterations", self.HELP_TEXTS["iterations"])).pack(side="left", padx=5)
+        self.iterations_entry = ttk.Entry(self, style="TEntry", width=30)
         self.iterations_entry.pack(pady=5)
 
-        ttk.Label(self, text="Timeout between repetitions (s):", style="TLabel").pack(pady=5)
-        self.timeout_rep_entry = ttk.Entry(self, style="TEntry", width=10)
+        frame1 = ttk.Frame(self)
+        frame1.pack(pady=5)
+        ttk.Label(frame1, text="Timeout between repetitions (s):", style="TLabel").pack(side="left")
+        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between repetitions (s)", self.HELP_TEXTS["timeout_repetitions"])).pack(side="left", padx=5)
+        self.timeout_rep_entry = ttk.Entry(self, style="TEntry", width=30)
         self.timeout_rep_entry.pack(pady=5)
 
-        ttk.Label(self, text="Timeout between tasks (s):", style="TLabel").pack(pady=5)
-        self.timeout_task_entry = ttk.Entry(self, style="TEntry", width=10)
+        frame1 = ttk.Frame(self)
+        frame1.pack(pady=5)
+        ttk.Label(frame1, text="Timeout between tasks (s):", style="TLabel").pack(side="left")
+        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
+        self.timeout_task_entry = ttk.Entry(self, style="TEntry", width=30)
         self.timeout_task_entry.pack(pady=5)
 
         # Checkbox for hardware warmup
         self.warmup_var = tk.IntVar()
-        self.warmup_check = ttk.Checkbutton(self, text="Perform hardware warmup", variable=self.warmup_var)
-        self.warmup_check.pack(pady=5)
-
-        #listbox = tk.Listbox(self)
-        #listbox.pack(pady=5)
+        warmup_frame = ttk.Frame(self)
+        warmup_frame.pack(pady=5)
+        self.warmup_check = ttk.Checkbutton(warmup_frame, text="Perform hardware warmup ", variable=self.warmup_var)
+        self.warmup_check.pack(side="left")
+        ttk.Button(warmup_frame, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Warmup", self.HELP_TEXTS["warmup"])).pack(side="left", padx=5)
 
         # Scrollable frame for task list
         container = ttk.Frame(self)
@@ -239,3 +273,37 @@ class SettingsView(tk.Frame):
         except queue.Empty:
             # If empty, check again after 1000ms
             self.after(1000, self.check_result)
+
+    def show_help(self, title, message):
+        help_window = tk.Toplevel(self)
+        help_window.title(title)
+        help_window.resizable(True, True)
+
+        # Create text widget first without packing
+        text = tk.Text(help_window, wrap="word", padx=10, pady=10, font=("Arial", 14))
+        text.insert("1.0", message)
+        text.config(state="disabled")  # Make read-only
+
+        # Calculate needed size based on content
+        # Get the text dimensions
+        text.update_idletasks()
+        lines = message.count('\n') + 1
+        max_line_length = max([len(line) for line in message.split('\n')])
+
+        # Estimate window size based on content
+        width = min(1000, max(300, max_line_length * 15)) # 15 pixels per character
+        height = min(1000, max(100, lines * 30 )) # 30 pixels per line
+
+        # Set window size
+        help_window.geometry(f"{width}x{height}")
+
+        # Pack the text widget
+        text.pack(expand=True, fill="both")
+
+        # Center the window
+        help_window.update_idletasks()
+        screen_width = help_window.winfo_screenwidth()
+        screen_height = help_window.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        help_window.geometry(f"+{x}+{y}")

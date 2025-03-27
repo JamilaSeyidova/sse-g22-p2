@@ -10,7 +10,7 @@ from logic.experiment_summary import extract_and_append_summary
 def find_gradle_build(folder):
     global repository
     for root, _, files in os.walk(folder):
-        if "settings.gradle" in files or "settings.gradle.kts" in files:
+        if "build.gradle" in files or "build.gradle.kts" in files or "settings.gradle" in files or "settings.gradle.kts" in files:
             repository = root
             return repository
     return None
@@ -104,7 +104,6 @@ def run_task(task, output_dir):
     except Exception as e:
         print(f"Error running task: {str(e)}")
         return None
-
 
 
 def run_experiment(experiment_name, iterations, timeout_between_repetitions, timeout_between_tasks, warmup, tasks, message_queue):
