@@ -3,73 +3,49 @@
 import os
 import pandas as pd
 
-from config import CPU_TYPE, SYSTEM
 
-
-def compute_energy_from_csv(csv_path):
-    if SYSTEM == "Darwin":
-        if CPU_TYPE == "Intel":
-            return compute_energy_macos_intel(csv_path)
-        else:
-            raise NotImplementedError
-    if SYSTEM == "Windows":
-        if CPU_TYPE == "m1": #idk ask to check name of the cpu
-            return NotImplementedError
-            # return compute_energy_windows_m1(csv_path)
-        if CPU_TYPE == "Intel":
-            return compute_energy_windows_intel(csv_path)
-        else:
-            raise NotImplementedError
-    else:
-        raise NotImplementedError
-
-
-def compute_energy_macos_intel(csv_path):
+def compute_cpu_energy_from_csv(csv_path):
     try:
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path, nrows=1)
+        columns = df.columns
 
-        if df.empty:
-            raise ValueError("CSV is empty")
-
-        for col in ["Delta", "SYSTEM_POWER (Watts)", "USED_MEMORY"]:
-            if col not in df.columns:
-                raise ValueError(f"Missing required column: {col}")
-
-        df['Delta_seconds'] = df['Delta'] / 1_000_000
-        df['Energy_Joules'] = df['SYSTEM_POWER (Watts)'] * df['Delta_seconds']
-        cpu_energy = df['Energy_Joules'].sum()
-
-        avg_used_mem_bytes = df['USED_MEMORY'].mean()
-        ram_energy = (avg_used_mem_bytes / 1e9) * 0.372
-
-        return cpu_energy, ram_energy
-
+        if "PACKAGE_ENERGY (J)" in columns or "CPU_ENERGY (J)" in columns:
+            return compute_cpu_energy_direct(csv_path)
+        elif "SYSTEM_POWER (Watts)" in columns or "CPU_POWER (Watts)" in columns:
+            return compute_cpu_energy_from_power(csv_path)
+        else:
+            raise NotImplementedError #should it be not implemented or metric not found?
     except Exception as e:
-        print(f"Error parsing {csv_path}: {e}")
-        return None  # ← this avoids unpacking crash
-
-def compute_energy_windows_intel(csv_path):
-    try:
-        df = pd.read_csv(csv_path)
-
-        if df.empty:
-            raise ValueError("CSV is empty")
-
-        for col in ["DRAM_ENERGY (J)", "PACKAGE_ENERGY (J)"]:
-            if col not in df.columns:
-                raise ValueError(f"Missing required column: {col}")
-
-        # CPU energy = max - min of PACKAGE_ENERGY (J)
-        cpu_energy = df["PACKAGE_ENERGY (J)"].iloc[-1] - df["PACKAGE_ENERGY (J)"].iloc[0]
-
-        # RAM energy = max - min of DRAM_ENERGY (J)
-        ram_energy = df["DRAM_ENERGY (J)"].iloc[-1] - df["DRAM_ENERGY (J)"].iloc[0]
-
-        return cpu_energy, ram_energy
-
-    except Exception as e:
-        print(f"Error parsing {csv_path} on Windows Intel: {e}")
+        print(f"Failed to compute CPU energy from {csv_path}: {e}")
         return None
+
+
+def compute_cpu_energy_direct(csv_path):
+    df = pd.read_csv(csv_path)
+    col = "PACKAGE_ENERGY (J)" if "PACKAGE_ENERGY (J)" in df.columns else "CPU_ENERGY (J)"
+    return df[col].iloc[-1] - df[col].iloc[0]
+
+def compute_cpu_energy_from_power(csv_path):
+    df = pd.read_csv(csv_path)
+    power_col = "SYSTEM_POWER (Watts)" if "SYSTEM_POWER (Watts)" in df.columns else "CPU_POWER (Watts)"
+    df["Delta_seconds"] = df["Delta"] / 1_000_000
+    df["Energy_Joules"] = df[power_col] * df["Delta_seconds"]
+    return df["Energy_Joules"].sum()
+
+def compute_ram_energy_from_csv(csv_path):
+    try:
+        df = pd.read_csv(csv_path)
+        if "DRAM_ENERGY (J)" in df.columns:
+            return df["DRAM_ENERGY (J)"].iloc[-1] - df["DRAM_ENERGY (J)"].iloc[0]
+        elif "USED_MEMORY" in df.columns:
+            return -1 #Mac does not have ram energy metric
+        else:
+            raise NotImplementedError
+    except Exception as e:
+        print(f"Failed to compute RAM energy from {csv_path}: {e}")
+        return None
+
+
 
 def get_latest_experiment_folder(base_dir="experiment_results"):
     folders = [
@@ -98,8 +74,10 @@ def extract_and_append_summary(latest_exp_path, summary_csv="all_experiments_sum
             csv_file = os.path.join(run_path, "results.csv")
             if os.path.exists(csv_file):
                 try:
-                    cpu, ram = compute_energy_from_csv(csv_file)
-                    run_number = int(run_folder.replace("iterazione", ""))
+                    cpu = compute_cpu_energy_from_csv(csv_file)
+                    ram = compute_ram_energy_from_csv(csv_file)
+
+                    run_number = int(run_folder)
                     data.append({
                         "Experiment": experiment_name,
                         "Task": task_name,
