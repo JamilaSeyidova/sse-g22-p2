@@ -1,9 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-import os
-import subprocess
-import re
 import threading
 import queue
 
@@ -242,9 +239,3 @@ class SettingsView(tk.Frame):
         except queue.Empty:
             # If empty, check again after 1000ms
             self.after(1000, self.check_result)
-
-
-
-
-
-
