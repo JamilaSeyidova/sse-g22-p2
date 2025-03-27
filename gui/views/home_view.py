@@ -11,8 +11,23 @@ class HomeView(tk.Frame):
         label.pack(pady=20)
 
         # Navigation Buttons
-        statistics_btn = ttk.Button(self, text="Go to Statistics", command=lambda: controller.show_frame("StatisticsView"))
+        statistics_btn = ttk.Button(
+            self,
+            text="Go to Statistics",
+            command=lambda: [
+                controller.geometry(f"{int(self.winfo_screenwidth() * 0.5)}x{int(self.winfo_screenheight() * 0.7)}"),  # Resize the window
+                controller.show_frame("StatisticsView")
+            ]
+        )
         statistics_btn.pack(pady=10)
-        
-        settings_btn = ttk.Button(self, text="Go to Settings", command=lambda: controller.show_frame("SettingsView"))
+
+        settings_btn = ttk.Button(
+            self,
+            text="Go to Settings",
+            command=lambda: [
+                controller.geometry(f"{int(self.winfo_screenwidth() * 0.5)}x{int(self.winfo_screenheight() * 0.7)}"),  # Resize the window
+                controller.show_frame("SettingsView")
+            ]
+        )
+
         settings_btn.pack(pady=10)

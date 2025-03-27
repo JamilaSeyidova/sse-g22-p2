@@ -1,17 +1,14 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-import os
-import subprocess
-import re
 import threading
 import queue
 
 from logic.experiment_setup import find_energibridge, find_gradle_build, getTasks, run_experiment
-    
+
 
 class SettingsView(tk.Frame):
-    
+
     repository = None
     label = None
     run_button = None
@@ -57,7 +54,7 @@ class SettingsView(tk.Frame):
 
         style.map("TCheckbutton",
                   foreground=[("!selected", "#ff5733"), ("selected", "#33adff")])
-        
+
 
         main_frame = ttk.Frame(self, style="TFrame", padding=20)
         main_frame.pack(expand=True, fill="both", anchor="center")
@@ -83,7 +80,7 @@ class SettingsView(tk.Frame):
         self.warmup_var = tk.IntVar()
         self.warmup_check = ttk.Checkbutton(self, text="Perform hardware warmup", variable=self.warmup_var)
         self.warmup_check.pack(pady=5)
-        
+
         #listbox = tk.Listbox(self)
         #listbox.pack(pady=5)
 
@@ -91,14 +88,14 @@ class SettingsView(tk.Frame):
         container = ttk.Frame(self)
         canvas = tk.Canvas(container, bg="white", )
         canvas.pack(side="left", fill="both", expand=True)
-        
+
         def on_mouse_wheel(event):
             canvas.yview_scroll(-1 * (event.delta // 120), "units")
-            
-        canvas.bind_all("<MouseWheel>", on_mouse_wheel) 
-        canvas.bind_all("<Button-4>", on_mouse_wheel)  
-        canvas.bind_all("<Button-5>", on_mouse_wheel) 
-        
+
+        canvas.bind_all("<MouseWheel>", on_mouse_wheel)
+        canvas.bind_all("<Button-4>", on_mouse_wheel)
+        canvas.bind_all("<Button-5>", on_mouse_wheel)
+
         scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
         self.scrollable_frame = ttk.Frame(canvas)
 
@@ -128,18 +125,18 @@ class SettingsView(tk.Frame):
         
         self.label = ttk.Label(self, text="", style="TLabel")
         self.label.pack(pady=20)
-        
+
     def update_label(self, text:str):
         self.label.config(text=text, foreground="#4CAF50")  # Green text
-        
-        
+
+
     def browse_folder(self):
         folder_selected = filedialog.askdirectory()
         if folder_selected :
             gradle_file = find_gradle_build(folder_selected)
             if gradle_file:
                 self.label.config(text=f"Found: {gradle_file}")
-                self.updateTaskList() 
+                self.updateTaskList()
             else:
                 self.label.config(text="gradle.build file not found")
                 self.run_button.config(state='disabled')
@@ -155,8 +152,8 @@ class SettingsView(tk.Frame):
             else:
                 self.label.config(text="energibridge.exe not found")
                 self.run_button.config(state='disabled')
-                
-    
+
+
     def getEnabledTasks(self):
         enabled_tasks = []
         for task, var in self.task_dict.items():
@@ -196,13 +193,13 @@ class SettingsView(tk.Frame):
 
         enabled_tasks = self.getEnabledTasks()
         print(enabled_tasks)
-        
+
         if enabled_tasks == []:
             messagebox.showerror("Input Error", "No tasks selected.")
             return
-        
+
         warmup = bool(self.warmup_var.get())
-        
+
         if (self.running):
             messagebox.showerror("Input Error", "Experiment already running.")
             return
@@ -216,7 +213,7 @@ class SettingsView(tk.Frame):
 
         self.check_result()
 
-        
+
     def updateTaskList(self):
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
@@ -227,8 +224,8 @@ class SettingsView(tk.Frame):
             self.task_dict[task] = var
             chk = ttk.Checkbutton(self.scrollable_frame, text=task, variable=var, style="TCheckbutton")
             chk.pack(anchor="nw", fill="both")
-        self.update_idletasks()        
-       
+        self.update_idletasks()
+
 
     def check_result(self):
         try:
@@ -242,9 +239,3 @@ class SettingsView(tk.Frame):
         except queue.Empty:
             # If empty, check again after 1000ms
             self.after(1000, self.check_result)
-        
-    
-    
-    
-
-
