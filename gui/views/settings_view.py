@@ -74,7 +74,9 @@ class SettingsView(tk.Frame):
         label = ttk.Label(header_frame, text="Settings View", font=("Helvetica", 18, "bold"), style="TLabel")
         label.pack(side="left")
 
-        home_btn = ttk.Button(header_frame, text="Back to Home", command=lambda: controller.show_frame("HomeView"),)
+        home_btn = ttk.Button(header_frame, text="Back to Home", command=lambda: [
+                                controller.geometry("500x300"),
+                                 controller.show_frame("HomeView")])
         home_btn.pack(side="right")
 
         # Main content frame
@@ -120,31 +122,33 @@ class SettingsView(tk.Frame):
 
         # Scrollable frame for task list
         container = ttk.Frame(self)
-        canvas = tk.Canvas(container, bg="white", )
+        container.pack(fill="both", expand=True, pady=10)
+
+        canvas = tk.Canvas(container, bg="white", highlightthickness=0)
         canvas.pack(side="left", fill="both", expand=True)
 
-        def on_mouse_wheel(event):
-            canvas.yview_scroll(-1 * (event.delta // 120), "units")
-
-        canvas.bind_all("<MouseWheel>", on_mouse_wheel)
-        canvas.bind_all("<Button-4>", on_mouse_wheel)
-        canvas.bind_all("<Button-5>", on_mouse_wheel)
-
         scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+
         self.scrollable_frame = ttk.Frame(canvas)
 
+        # Make the scroll region adapt to content
         self.scrollable_frame.bind(
             "<Configure>",
-            lambda e, canvas=canvas: canvas.configure(
+            lambda e: canvas.configure(
                 scrollregion=canvas.bbox("all")
             )
         )
-        scrollbar.pack(side="right", fill="both")
 
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        container.pack(fill="both", expand=True)
+        # Mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
 
         # Gradle project selection section
         browse_button = ttk.Button(self, text="Select Folder", command=self.browse_folder, style="browse.TButton")

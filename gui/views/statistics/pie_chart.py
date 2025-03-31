@@ -12,14 +12,20 @@ class PieChart(tk.Frame):
     def __init__(self, parent, df):
         super().__init__(parent)
         self.df = df
-        
+        self.energy_type = None
+
         ttk.Label(self, text="Select Experiment:").pack(pady=(10, 0))
         self.pie_exp_var = tk.StringVar()
         self.pie_exp_dropdown = ttk.Combobox(self, textvariable=self.pie_exp_var, state="readonly")
         self.pie_exp_dropdown['values'] = sorted(self.df['Experiment'].unique())
-        self.pie_exp_dropdown.current(0)
+
+        if self.pie_exp_dropdown['values']:
+            self.pie_exp_dropdown.current(0)
+
+        # self.pie_exp_dropdown.current(0)
         self.pie_exp_dropdown.pack(pady=5)
-        self.pie_exp_dropdown.bind("<<ComboboxSelected>>", lambda e: self.update())
+        self.pie_exp_dropdown.bind("<<ComboboxSelected>>", lambda e: self.update(self.energy_type, self.df))
+
         self.pie_canvas = None
         
     def update(self, energy_type = None, df = None):
@@ -36,7 +42,11 @@ class PieChart(tk.Frame):
         if self.pie_canvas:
             self.pie_canvas.get_tk_widget().destroy()
         self._plot_chart(selected_exp, avg_energy)
-    
+
+        self.pie_exp_dropdown['values'] = sorted(self.df['Experiment'].unique())
+        if self.pie_exp_dropdown['values']:
+            self.pie_exp_dropdown.current(0)
+
     def _get_selected_experiment(self):
         selected_exp = self.pie_exp_var.get()
         return selected_exp
@@ -53,12 +63,47 @@ class PieChart(tk.Frame):
             avg_energy = exp_df.groupby('Task')['Total Energy'].mean()
         return avg_energy
 
+
     def _plot_chart(self, selected_exp, avg_energy):
         fig, ax = plt.subplots()
-        colors = sns.color_palette("pastel", len(avg_energy))
-        ax.pie(avg_energy, labels=avg_energy.index, autopct='%1.1f%%', startangle=90, colors=colors)
+
+        base_colors = sns.color_palette("pastel")
+        colors = base_colors * (len(avg_energy) // len(base_colors) + 1)
+
+        # Draw the pie chart
+        wedges, _, autotexts = ax.pie(
+            avg_energy,
+            labels=None,  # No labels on the pie itself
+            autopct='%1.1f%%',
+            startangle=90,
+            colors=colors[:len(avg_energy)],
+            pctdistance=1.2
+        )
+
+        for autotext in autotexts:
+            autotext.set_fontsize(8)
+
+        # Create legend labels with percentages
+        total = avg_energy.sum()
+        labels = [
+            f"{task} ({energy / total * 100:.1f}%)"
+            for task, energy in avg_energy.items()
+        ]
+
+        # Add the legend next to the chart
+        ax.legend(
+            wedges,
+            labels,
+            title="Tasks",
+            loc="center left",
+            bbox_to_anchor=(1.1, 0.5),  # Move legend further right
+            fontsize=10
+        )
+
         ax.axis('equal')
         plt.title(f"{self.energy_type} - {selected_exp}")
+        plt.tight_layout()
+
         self.pie_canvas = FigureCanvasTkAgg(fig, master=self)
         self.pie_canvas.draw()
         self.pie_canvas.get_tk_widget().pack(pady=10, fill='both', expand=True)

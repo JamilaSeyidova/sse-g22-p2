@@ -15,8 +15,9 @@ class HomeView(tk.Frame):
             self,
             text="Go to Statistics",
             command=lambda: [
-                controller.geometry(f"{int(self.winfo_screenwidth() * 0.5)}x{int(self.winfo_screenheight() * 0.7)}"),  # Resize the window
-                controller.show_frame("StatisticsView")
+                controller.geometry("1000x800"),  # Resize the window
+                controller.show_frame("StatisticsView"),
+                controller.frames["StatisticsView"].update()
             ]
         )
         statistics_btn.pack(pady=10)
@@ -25,7 +26,7 @@ class HomeView(tk.Frame):
             self,
             text="Go to Settings",
             command=lambda: [
-                controller.geometry(f"{int(self.winfo_screenwidth() * 0.4)}x{int(self.winfo_screenheight() * 0.8)}"),  # Resize the window
+                controller.geometry("700x900"),  # Resize the window
                 controller.show_frame("SettingsView")
             ]
         )

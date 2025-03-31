@@ -37,19 +37,42 @@ class BarChart(tk.Frame):
         )
 
         scroll_canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        
+
+        # Bar chart + table container (vertical stack)
+        chart_and_table_frame = ttk.Frame(scrollable_frame)
+        chart_and_table_frame.pack(fill="both", expand=True)
+
         # Bar chart frame
-        self.bar_chart_frame = ttk.Frame(scrollable_frame)
-        self.bar_chart_frame.pack(fill="both", expand=True)
+        self.bar_chart_frame = ttk.Frame(chart_and_table_frame)
+        self.bar_chart_frame.pack(fill="both", expand=True, padx=5, pady=(5, 0))
 
-        # Table style
-        style = ttk.Style()
-        style.configure("Treeview", rowheight=25)
-        style.configure("Treeview.Heading", font=('Helvetica', 10, 'bold'))
-        style.configure("Custom.Treeview", background="#ffffff", fieldbackground="#ffffff")
+        # Fixed size table frame
+        table_frame = ttk.Frame(chart_and_table_frame, width=600, height=180)
+        table_frame.pack_propagate(False)  # Prevent the frame from resizing to its content
+        table_frame.pack(anchor="w", padx=5, pady=(10, 10))  # Do NOT allow fill or expand
 
-        self.table = ttk.Treeview(scrollable_frame, columns=("Experiment", "Total"),
-                                    show="headings", height=6, style="Custom.Treeview")
+        # Treeview with fixed size inside the fixed frame
+        self.table = ttk.Treeview(
+            table_frame,
+            columns=("Experiment", "Total"),
+            show="headings",
+            height=6,  # Controls number of visible rows
+            style="Custom.Treeview"
+        )
+        self.table.heading("Experiment", text="Experiment")
+        self.table.heading("Total", text="Total Energy")
+        self.table.column("Experiment", width=120, anchor="center")
+        self.table.column("Total", width=120, anchor="center")
+
+        # Pack it without fill/expand — exact size
+        self.table.pack(fill="both", expand=True)
+
+        self.table.heading("Experiment", text="Experiment")
+        self.table.heading("Total", text="Total Energy")
+        self.table.column("Experiment", width=120, anchor="center")
+        self.table.column("Total", width=120, anchor="center")
+        self.table.pack(fill='x')
+
         self.table.heading("Experiment", text="Experiment")
         self.table.heading("Total", text="Total Energy")
         self.table.column("Experiment", width=120, anchor="center")
@@ -117,6 +140,7 @@ class BarChart(tk.Frame):
             self.energy_type = energy_type
         if df is not None:
             self.df = df
+            self._refresh_experiment_list()
         selected_exps = self._get_selected_experiments()
         if not selected_exps or not self.energy_type or self.df is None:
             return
@@ -152,12 +176,34 @@ class BarChart(tk.Frame):
             sum_data = bar_data.groupby('Experiment')['Total Energy'].sum()
         return grouped, y_label, sum_data
 
+
+    def _refresh_experiment_list(self):
+        # Clear and repopulate the experiment listbox
+        self.bar_exp_listbox.delete(0, tk.END)
+        for exp in sorted(self.df['Experiment'].unique()):
+            self.bar_exp_listbox.insert(tk.END, exp)
+
+        if self.bar_exp_listbox.size() > 0:
+            self.bar_exp_listbox.selection_set(0)
+
     def _plot_chart(self, energy_type, grouped, y_label):
-        fig, ax = plt.subplots()
+        energy_type = self.energy_type
+        n_experiments = grouped['Experiment'].nunique()
+        n_tasks = grouped['Task'].nunique()
+        width = max(6, n_tasks * n_experiments * 0.1)
+        height = 6
+
+        fig, ax = plt.subplots(figsize=(width, height))
         sns.barplot(data=grouped, x='Task', y=y_label, hue='Experiment', palette="pastel", ax=ax)
-        ax.set_title(f"{energy_type} by Task across Experiments")
+
+        ax.set_title(f"{energy_type} by Task across Experiments", pad=10)
         ax.set_xlabel("Task")
         ax.set_ylabel(y_label)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+
+        plt.tight_layout(pad=1.0)  # Minimize surrounding whitespace
+        fig.subplots_adjust(top=0.92, bottom=0.25, left=0.08, right=0.95)
+
         self.bar_canvas = FigureCanvasTkAgg(fig, master=self.bar_chart_frame)
         self.bar_canvas.draw()
         self.bar_canvas.get_tk_widget().pack(pady=10, fill='both', expand=True)
