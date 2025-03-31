@@ -40,26 +40,56 @@ def build_gradle_and_clean_commands(energibridge_path, output_dir, task):
     return full_command, clean_command
 
 
-def warmup_hardware():
+def warmup_hardware(duration=300):
     """
-    Simulate a hardware warmup using a Bernoulli sequence.
-    For demonstration, we run a fixed number of warmup iterations,
-    and each iteration randomly reports a success (simulating the Bernoulli trial).
+    Warm up the hardware by calculating Fibonacci numbers for 5 minutes.
+    This creates a CPU load that stabilizes the system before experiments.
     """
-    print("Starting hardware warmup using Bernoulli sequence...")
-    warmup_iterations = 10
-    successes = 0
-    for i in range(warmup_iterations):
-        # Simulate a Bernoulli trial (p=0.5 chance for 'success')
-        trial = random.random() < 0.5
-        if trial:
-            successes += 1
-        print(f"Warmup iteration {i+1}/{warmup_iterations}: {'Success' if trial else 'Failure'}")
-        time.sleep(0.5)  # short delay between warmup runs
-    print(f"Hardware warmup complete with {successes}/{warmup_iterations} successful runs.\n")
+    print(f"Starting hardware warmup using Fibonacci sequence for {duration} seconds...")
+    
+    def fibonacci(n):
+        if n <= 1:
+            return n
+        return fibonacci(n-1) + fibonacci(n-2)
+    
+    start_time = time.time()
+    end_time = start_time + duration
+    iterations = 0
+    last_report_time = start_time
+    
+    while time.time() < end_time:
+        # Calculate a Fibonacci number (using small values to avoid excessive computation)
+        n = iterations % 30  # Keep n reasonably small to avoid long calculations
+        fib_result = fibonacci(n)
+        iterations += 1
+        
+        # Report progress every 10 seconds
+        current_time = time.time()
+        if current_time - last_report_time >= 30:
+            elapsed = current_time - start_time
+            remaining = end_time - current_time
+            print(f"Warmup progress: {elapsed:.1f}s elapsed, {remaining:.1f}s remaining, {iterations} iterations completed")
+            last_report_time = current_time
+    
+    total_time = time.time() - start_time
+    print(f"Hardware warmup complete after {total_time:.2f} seconds with {iterations} Fibonacci calculations.\n")
+    time.sleep(60)
 
-def getTasks():
-    command = "gradle build --rerun-tasks --dry-run"
+def idle_consumption(output_file):
+    """
+    Measure the idle consumption of the system for 60s.
+    """
+    gradle_command = f'"{energibridge_path}" -o "{output_file}" --summary timeout /T 60'
+    result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
+    print(f"Idle consumption measured for 60 seconds. Output saved to {output_file}.")
+    return result
+
+
+def getTasks(cmd="build"):
+    command = f"gradle {cmd} --rerun-tasks --dry-run"
+    print("Running command to get tasks: ", command)
+    print("This may take a while...")
+    print("Please wait...\n")
     process = subprocess.Popen(
         command,
         shell=True,
@@ -68,7 +98,6 @@ def getTasks():
         stderr=subprocess.STDOUT,
         text=True
     )
-
     regex = re.compile(r"^:(\S+) SKIPPED")
     tasks = []
     output_lines = []
@@ -133,6 +162,9 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
     print(f"=== Starting Experiment: {experiment_name} ===\n")
     print(f"Results will be saved in: {experiment_dir}\n")
 
+    idle_energy_result = idle_consumption(os.path.join(experiment_dir, "idle_consumption.csv"))
+    print("Idle consumption measurement completed.\n Results: \n", idle_energy_result)
+
     # Perform warmup if required
     if warmup:
         warmup_hardware()
@@ -162,6 +194,9 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
         print(f"Completed all {iterations} iterations for task: {task}.")
         print(f"Waiting {timeout_between_tasks} seconds before moving to the next task...\n")
         time.sleep(timeout_between_tasks)
+        if timeout_between_tasks > 120:
+            print("Hardware warmup after long pause.")
+            warmup_hardware(120)
 
     print("=== Experiment completed. ===")
     print(f"All results saved in: {experiment_dir}")
