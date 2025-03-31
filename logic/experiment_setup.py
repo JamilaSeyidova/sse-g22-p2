@@ -7,24 +7,22 @@ import random
 
 from logic.experiment_summary import extract_and_append_summary
 
-def find_gradle_build(folder):
+def set_gradle_repository_path(path):
+    """
+    Set the global repository path.
+    """
     global repository
-    for root, _, files in os.walk(folder):
-        if "build.gradle" in files or "build.gradle.kts" in files or "settings.gradle" in files or "settings.gradle.kts" in files:
-            repository = root
-            return repository
-    return None
-
-
-def find_energibridge(folder):
+    repository = path
+    
+def set_energibridge_path(path):
+    """
+    Set the global energibridge path.
+    """
+    if not os.path.exists(path):
+        return None
     global energibridge_path
-    target_name = "energibridge.exe" if os.name == "nt" else "energibridge"
-
-    for root, _, files in os.walk(folder):
-        if target_name in files:
-            energibridge_path = os.path.join(root, target_name)
-            return energibridge_path  # Already OS-appropriate
-    return None
+    energibridge_path = path
+    return energibridge_path
 
 def build_gradle_and_clean_commands(energibridge_path, output_dir, task):
     output_file = os.path.join(output_dir, "results.csv")
@@ -61,18 +59,31 @@ def warmup_hardware():
     print(f"Hardware warmup complete with {successes}/{warmup_iterations} successful runs.\n")
 
 def getTasks():
-    command = f"gradle build --rerun-tasks --dry-run"
-    result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=repository)
-    print("hi")
+    command = "gradle build --rerun-tasks --dry-run"
+    process = subprocess.Popen(
+        command,
+        shell=True,
+        cwd=repository,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True
+    )
+
     regex = re.compile(r"^:(\S+) SKIPPED")
     tasks = []
+    output_lines = []
 
-    for line in result.stdout.splitlines():
+    for line in process.stdout:
+        print(line, end='')
+        output_lines.append(line)
+
         match = regex.match(line)
         if match:
             task = match.group(1)
             print(f"Found task: {task}")
             tasks.append(task)
+
+    process.wait()
     return tasks
 
 
