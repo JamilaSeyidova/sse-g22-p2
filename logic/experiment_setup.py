@@ -188,13 +188,14 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
     idle_energy_result = idle_consumption(os.path.join(experiment_dir, "idle_consumption.csv"))
     print("Idle consumption measurement completed.\n Results: \n", idle_energy_result)
 
+    clean_build_output()
+    
     # Perform warmup if required
     if warmup:
         warmup_hardware()
 
     # Run experiments for each task
     for i in range(iterations):
-        clean_build_output()
         iteration_number = i + 1
 
         for task in tasks:
@@ -210,14 +211,15 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
             # Execute task
             run_task(task, iteration_dir)
 
-            print(f"Waiting {timeout_between_repetitions} seconds for tail energy to settle...\n")
-            time.sleep(timeout_between_repetitions)
+            print(f"Waiting {timeout_between_tasks} seconds before moving to the next task...\n")
+            time.sleep(timeout_between_tasks)
 
         print(f"Completed all tasks for iteration {iteration_number}.")
-        print(f"Waiting {timeout_between_tasks} seconds before moving to the next task...\n")
-        
-        time.sleep(timeout_between_tasks)
-        if timeout_between_tasks > 120:
+        clean_build_output()
+
+        print(f"Waiting {timeout_between_repetitions} seconds for tail energy to settle...\n")
+        time.sleep(timeout_between_repetitions)
+        if timeout_between_repetitions > 120:
             print("Hardware warmup after long pause.")
             warmup_hardware(120)
 
