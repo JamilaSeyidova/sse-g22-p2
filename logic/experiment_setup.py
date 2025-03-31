@@ -178,13 +178,7 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
 
     # Run experiments for each task
     for i in range(iterations):
-        
-        if os.name == 'nt':
-            clean_command = 'cmd /c "gradle clean"'
-        else:
-            clean_command = 'sh -c \'gradle clean\''
-        subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=repository)
-        
+        clean_build_output()
         iteration_number = i + 1
 
         for task in tasks:
@@ -218,3 +212,36 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
     extract_and_append_summary(experiment_dir)
 
     return experiment_dir
+
+def clean_build_output():
+    """
+    Clean the build output directory.
+    """
+    
+    if os.name == 'nt':
+        clean_command = 'cmd /c "gradle clean"'
+    else:
+        clean_command = 'sh -c \'gradle clean\''
+        
+    gradle_root = find_gradle_root()
+    subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=gradle_root)
+    
+    
+def find_gradle_root():
+    """
+    Find the root directory of the Gradle project by searching for settings.gradle or settings.gradle.kts.
+    """
+    current_path = os.path.abspath(repository)
+
+    while True:
+        settings_file = os.path.join(current_path, 'settings.gradle')
+        settings_kts_file = os.path.join(current_path, 'settings.gradle.kts')
+        
+        if os.path.isfile(settings_file) or os.path.isfile(settings_kts_file):
+            return current_path
+        
+        parent_path = os.path.dirname(current_path)
+        if parent_path == current_path:
+            return None
+
+        current_path = parent_path
