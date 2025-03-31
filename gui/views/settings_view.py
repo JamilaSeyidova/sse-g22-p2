@@ -142,15 +142,7 @@ class SettingsView(tk.Frame):
         self.warmup_check = ttk.Checkbutton(warmup_frame, text="Perform hardware warmup ", variable=self.warmup_var)
         self.warmup_check.pack(side="left")
         ttk.Button(warmup_frame, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Warmup", self.HELP_TEXTS["warmup"])).pack(side="left", padx=5)
-
-        # EnergiBridge directory selection button
-        #enerB_button = ttk.Button(self, text="Select EnergiBridge Directory", command=self.browse_folder_energibridge, style="browse.TButton")
-        #enerB_button.pack(side=tk.TOP, pady=5)
-#
-        ## Gradle project selection button
-        #browse_button = ttk.Button(self, text="Select Gradle Project", command=self.browse_folder, style="browse.TButton")
-        #browse_button.pack(side=tk.TOP, pady=5)
-
+        
         buttons_frame = ttk.Frame(self)
         buttons_frame.pack(side=tk.TOP, pady=5)
 
@@ -194,14 +186,6 @@ class SettingsView(tk.Frame):
             canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
-
-
-        # Gradle project selection section
-        browse_button = ttk.Button(self, text="Select Folder", command=self.browse_folder, style="browse.TButton")
-        browse_button.pack(side=tk.TOP, fill="x", pady=5)
-
-        enerB_button = ttk.Button(self, text="Select EnergiBridge Directory", command=self.browse_folder_energibridge, style="browse.TButton")
-        enerB_button.pack(side=tk.TOP, fill="x", pady=5)
 
         # Run Experiment button
         self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper, style="run.TButton", state='disabled')

@@ -7,6 +7,8 @@ import random
 
 from logic.experiment_summary import extract_and_append_summary
 
+repository: str
+
 def set_gradle_repository_path(path):
     """
     Set the global repository path.
@@ -24,9 +26,14 @@ def set_energibridge_path(path):
     energibridge_path = path
     return energibridge_path
 
-def build_gradle_and_clean_commands(energibridge_path, output_dir, task):
+def build_gradle_and_clean_commands(energibridge_path, output_dir, task: str):
     output_file = os.path.join(output_dir, "results.csv")
 
+    temp_path = repository
+    while os.path.basename(temp_path) in task:
+        task = task.replace(os.path.basename(temp_path) + ':', "")
+        temp_path = os.path.dirname(temp_path)
+        
     gradle_command = f'gradle {task}'
 
     if os.name == 'nt':
@@ -123,11 +130,11 @@ def run_task(task, output_dir):
     print(f"Running task: {task}\n Output directory: {output_dir}")
 
     os.makedirs(output_dir, exist_ok=True)
-
+    
     gradle_command, clean_command = build_gradle_and_clean_commands(energibridge_path, output_dir, task)
 
     try:
-        subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=repository)
+        # subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=repository)
 
         result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
 
@@ -153,7 +160,7 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
     # Create a timestamp for the experiment
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Crea la directory principale dell'esperimento
+    # Create the main directory for storing results
     base_dir = os.path.join(repository, "experiment_results")  # Base directory for all experiments
     experiment_dir = os.path.join(base_dir, f"{experiment_name}_{timestamp}")
     os.makedirs(base_dir, exist_ok=True)  # Create base directory if it doesn't exist
@@ -170,16 +177,21 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
         warmup_hardware()
 
     # Run experiments for each task
-    for task in tasks:
-        task_dir_name = task.replace(':', '_')
-        task_dir = os.path.join(experiment_dir, task_dir_name)
-        os.makedirs(task_dir, exist_ok=True)
+    for i in range(iterations):
+        
+        if os.name == 'nt':
+            clean_command = 'cmd /c "gradle clean"'
+        else:
+            clean_command = 'sh -c \'gradle clean\''
+        subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=repository)
+        
+        iteration_number = i + 1
 
-        print(f"--- Experiment for task: {task} ---")
-
-        for i in range(iterations):
-            iteration_number = i + 1
+        for task in tasks:
             # Create a directory for the current iteration
+            task_dir_name = task.replace(':', '_')
+            task_dir = os.path.join(experiment_dir, task_dir_name)
+            os.makedirs(task_dir, exist_ok=True)
             iteration_dir = os.path.join(task_dir, f"{iteration_number}")
             os.makedirs(iteration_dir, exist_ok=True)
 
@@ -191,8 +203,9 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
             print(f"Waiting {timeout_between_repetitions} seconds for tail energy to settle...\n")
             time.sleep(timeout_between_repetitions)
 
-        print(f"Completed all {iterations} iterations for task: {task}.")
+        print(f"Completed all tasks for iteration {iteration_number}.")
         print(f"Waiting {timeout_between_tasks} seconds before moving to the next task...\n")
+        
         time.sleep(timeout_between_tasks)
         if timeout_between_tasks > 120:
             print("Hardware warmup after long pause.")
