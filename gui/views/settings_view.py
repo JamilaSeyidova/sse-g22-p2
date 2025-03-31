@@ -205,6 +205,7 @@ class SettingsView(tk.Frame):
         gradle_file = filedialog.askopenfilename(title="Pick a gradle.build file", filetypes=[("Gradle Build File", "*.gradle;*.gradle.kts"), ("All files", "*.*")])
         set_gradle_repository_path(os.path.dirname(gradle_file))
         if gradle_file:
+            self.repository = gradle_file
             self.label.config(text=f"Found: {gradle_file}")
             self.updateTaskList()
         else:
