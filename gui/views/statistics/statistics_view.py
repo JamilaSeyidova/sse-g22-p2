@@ -84,7 +84,7 @@ class StatisticsView(tk.Frame):
         csv_path = "results/all_experiments_summary.csv"
         try:
             self.df = pd.read_csv(csv_path)
-            self.reload_status.config(text="CSV successfully reloaded.")
+            self.reload_status.config(text="CSV successfully loaded.")
         except Exception as e:
             print(f"Error loading CSV: {e}")
             self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy'])
