@@ -79,7 +79,7 @@ def get_latest_experiment_folder(base_dir="experiment_results"):
     folders.sort(key=lambda name: name.split("_")[-1], reverse=True)
     return os.path.join(base_dir, folders[0]) if folders else None
 
-def extract_and_append_summary(latest_exp_path, summary_csv="all_experiments_summary.csv"):
+def extract_and_append_summary(latest_exp_path, summary_csv="results/all_experiments_summary.csv"):
     if not latest_exp_path:
         print("No experiment folders found.")
         return
