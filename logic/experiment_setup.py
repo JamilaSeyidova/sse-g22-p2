@@ -29,10 +29,10 @@ def set_energibridge_path(path):
 def build_gradle_and_clean_commands(energibridge_path, output_dir, task: str):
     output_file = os.path.join(output_dir, "results.csv")
 
-    temp_path = repository
-    while os.path.basename(temp_path) in task:
-        task = task.replace(os.path.basename(temp_path) + ':', "")
-        temp_path = os.path.dirname(temp_path)
+    # temp_path = repository
+    # while os.path.basename(temp_path) in task:
+    #     task = task.replace(os.path.basename(temp_path) + ':', "")
+    #     temp_path = os.path.dirname(temp_path)
         
     gradle_command = f'gradle {task}'
 
@@ -105,7 +105,7 @@ def getTasks(cmd="build"):
         stderr=subprocess.STDOUT,
         text=True
     )
-    regex = re.compile(r"^:(\S+) SKIPPED")
+    regex = re.compile(r"^(\S+) SKIPPED")
     tasks = []
     output_lines = []
 
