@@ -3,7 +3,8 @@ sse-g22-p2
 
 ## 🛠 Project Setup
 
-This is a Python project managed with [UV](https://astral.sh/blog/uv/), a fast Python package and project manager.
+This project requires a gradle installation, instructions on how to install gradle can be found [here](https://gradle.org/install/)
+This project managed through UV, a python package and project manager. In order to start, install UV:
 
 ### Step 1 – Install UV
 
