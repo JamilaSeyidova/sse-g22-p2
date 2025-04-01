@@ -29,22 +29,17 @@ def set_energibridge_path(path):
 def build_gradle_and_clean_commands(energibridge_path, output_dir, task: str):
     output_file = os.path.join(output_dir, "results.csv")
 
-    # temp_path = repository
-    # while os.path.basename(temp_path) in task:
-    #     task = task.replace(os.path.basename(temp_path) + ':', "")
-    #     temp_path = os.path.dirname(temp_path)
-        
-    gradle_command = f'gradle {task}'
+    gradle_command = f'gradlew {task}'
 
     if os.name == 'nt':
         shell_command = f'cmd /c "{gradle_command}"'
-        clean_command = 'cmd /c "gradle clean"'
+        #clean_command = 'cmd /c "gradlew clean"'
     else:
         shell_command = f'sh -c \'{gradle_command}\''
-        clean_command = 'sh -c \'gradle clean\''
+        #clean_command = 'sh -c \'gradle clean\''
 
     full_command = f'"{energibridge_path}" -o "{output_file}" --summary {shell_command}'
-    return full_command, clean_command
+    return full_command #, clean_command
 
 
 def warmup_hardware(duration=300):
@@ -86,9 +81,9 @@ def idle_consumption(output_file):
     """
     Measure the idle consumption of the system for 60s.
     """
-    gradle_command = f'"{energibridge_path}" -o "{output_file}" --summary timeout /T 60'
+    gradle_command = f'"{energibridge_path}" -o "{output_file}" --summary timeout /T 15'
     result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
-    print(f"Idle consumption measured for 60 seconds. Output saved to {output_file}.")
+    print(f"Idle consumption measured for 15 seconds. Output saved to {output_file}.")
     return result
 
 
@@ -147,12 +142,11 @@ def run_task(task, output_dir):
 
     os.makedirs(output_dir, exist_ok=True)
     
-    gradle_command, clean_command = build_gradle_and_clean_commands(energibridge_path, output_dir, task)
+    gradle_command = build_gradle_and_clean_commands(energibridge_path, output_dir, task)
 
     try:
-        # subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=repository)
-
-        result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
+        gradle_root = find_gradle_root()
+        result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=gradle_root)
 
         # Save the command output to a log file
         with open(os.path.join(output_dir, "command_output.log"), "w") as f:
@@ -237,8 +231,9 @@ def clean_build_output():
     """
     
     if os.name == 'nt':
-        clean_command = 'cmd /c "gradle clean"'
-    else:
+        clean_command = 'cmd /c "gradlew clean"'
+    else: 
+        ##### TODO: Change command to use gradlew
         clean_command = 'sh -c \'gradle clean\''
         
     gradle_root = find_gradle_root()

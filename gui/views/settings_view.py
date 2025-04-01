@@ -156,6 +156,10 @@ class SettingsView(tk.Frame):
                                   command=self.browse_folder, style="browse.TButton")
         browse_button.pack(side=tk.LEFT)
 
+        # Run Experiment button
+        self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper, style="run.TButton", state='disabled')
+        self.run_button.pack(side=tk.TOP, fill="x", pady=10)
+
         # Scrollable frame for task list
         container = ttk.Frame(self)
         container.pack(fill="both", expand=True, pady=10)
@@ -187,9 +191,6 @@ class SettingsView(tk.Frame):
 
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
-        # Run Experiment button
-        self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper, style="run.TButton", state='disabled')
-        self.run_button.pack(side=tk.TOP, fill="x", pady=10)
         
         self.label = ttk.Label(self, text="", style="TLabel")
         self.label.pack(pady=20)
@@ -290,7 +291,7 @@ class SettingsView(tk.Frame):
         self.task_dict = {}
         task_list = getTasks(self.command_entry.get())
         for task in task_list:
-            var = tk.IntVar(value=0)
+            var = tk.IntVar(value=1)
             self.task_dict[task] = var
             chk = ttk.Checkbutton(self.scrollable_frame, text=task, variable=var, style="task.TCheckbutton")
             chk.pack(anchor="nw", fill="both")
