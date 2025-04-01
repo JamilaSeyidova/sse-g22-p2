@@ -6,15 +6,7 @@ import datetime
 import random
 
 from logic.experiment_summary import extract_and_append_summary
-
-repository: str
-
-def set_gradle_repository_path(path):
-    """
-    Set the global repository path.
-    """
-    global repository
-    repository = path
+import global_vars
     
 def set_energibridge_path(path):
     """
@@ -87,7 +79,7 @@ def idle_consumption(output_file):
     Measure the idle consumption of the system for 60s.
     """
     gradle_command = f'"{energibridge_path}" -o "{output_file}" --summary timeout /T 60'
-    result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
+    result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=global_vars.PROJECT_REPOSITORY_PATH)
     print(f"Idle consumption measured for 60 seconds. Output saved to {output_file}.")
     return result
 
@@ -100,7 +92,7 @@ def getTasks(cmd="build"):
     # process = subprocess.Popen(
     #     command,
     #     shell=True,
-    #     cwd=repository,
+    #     cwd=global_vars.PROJECT_REPOSITORY_PATH,
     #     stdout=subprocess.PIPE,
     #     stderr=subprocess.STDOUT,
     #     text=True
@@ -152,7 +144,7 @@ def run_task(task, output_dir):
     try:
         # subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=repository)
 
-        result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
+        result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=global_vars.PROJECT_REPOSITORY_PATH)
 
         # Save the command output to a log file
         with open(os.path.join(output_dir, "command_output.log"), "w") as f:
@@ -177,7 +169,7 @@ def run_experiment(experiment_name, iterations, timeout_between_repetitions, tim
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Create the main directory for storing results
-    base_dir = os.path.join(repository, "experiment_results")  # Base directory for all experiments
+    base_dir = os.path.join(global_vars.PROJECT_REPOSITORY_PATH, "experiment_results")  # Base directory for all experiments
     experiment_dir = os.path.join(base_dir, f"{experiment_name}_{timestamp}")
     os.makedirs(base_dir, exist_ok=True)  # Create base directory if it doesn't exist
     os.makedirs(experiment_dir, exist_ok=True)
@@ -249,7 +241,7 @@ def find_gradle_root():
     """
     Find the root directory of the Gradle project by searching for settings.gradle or settings.gradle.kts.
     """
-    current_path = os.path.abspath(repository)
+    current_path = os.path.abspath(global_vars.PROJECT_REPOSITORY_PATH)
 
     while True:
         settings_file = os.path.join(current_path, 'settings.gradle')

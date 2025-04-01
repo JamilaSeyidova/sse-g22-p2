@@ -161,19 +161,19 @@ class BarChart(tk.Frame):
     def _extract_data(self, selected_exps, energy_type):
         bar_data = self.df[self.df['Experiment'].isin(selected_exps)]
         if energy_type == 'CPU Energy':
-            grouped = bar_data.groupby(['Experiment', 'Task'])['CPU Energy'].mean().reset_index()
+            grouped = bar_data.groupby(['Experiment', 'Task'], sort=False)['CPU Energy'].mean().reset_index()
             y_label = 'CPU Energy'
-            sum_data = bar_data.groupby('Experiment')['CPU Energy'].sum()
+            sum_data = bar_data.groupby('Experiment', sort=False)['CPU Energy'].sum()
         elif energy_type == 'RAM Energy':
-            grouped = bar_data.groupby(['Experiment', 'Task'])['RAM Energy'].mean().reset_index()
+            grouped = bar_data.groupby(['Experiment', 'Task'], sort=False)['RAM Energy'].mean().reset_index()
             y_label = 'RAM Energy'
-            sum_data = bar_data.groupby('Experiment')['RAM Energy'].sum()
+            sum_data = bar_data.groupby('Experiment', sort=False)['RAM Energy'].sum()
         else:
             bar_data = bar_data.copy()
             bar_data['Total Energy'] = bar_data['CPU Energy'] + bar_data['RAM Energy']
-            grouped = bar_data.groupby(['Experiment', 'Task'])['Total Energy'].mean().reset_index()
+            grouped = bar_data.groupby(['Experiment', 'Task'], sort=False)['Total Energy'].mean().reset_index()
             y_label = 'Total Energy'
-            sum_data = bar_data.groupby('Experiment')['Total Energy'].sum()
+            sum_data = bar_data.groupby('Experiment', sort=False)['Total Energy'].sum()
         return grouped, y_label, sum_data
 
 

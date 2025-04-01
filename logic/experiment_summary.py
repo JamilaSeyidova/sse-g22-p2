@@ -3,6 +3,14 @@
 import os
 import pandas as pd
 
+import global_vars
+
+def get_summary_csv_path():
+    if global_vars.PROJECT_REPOSITORY_PATH is None:
+            print('Summary CSV not available, project folder is not selected')
+            return
+    return os.path.join(global_vars.PROJECT_REPOSITORY_PATH, 'experiment_results', 'aggregated', 'all_experiments_summary.csv')
+
 
 def compute_cpu_energy_from_csv(csv_path, idle_path):
     try:
@@ -79,19 +87,31 @@ def get_latest_experiment_folder(base_dir="experiment_results"):
     folders.sort(key=lambda name: name.split("_")[-1], reverse=True)
     return os.path.join(base_dir, folders[0]) if folders else None
 
-def extract_and_append_summary(latest_exp_path, summary_csv="results/all_experiments_summary.csv"):
-    if not latest_exp_path:
+def extract_and_append_summary(experiment_path):
+    summary_csv = get_summary_csv_path()
+
+    if not experiment_path:
         print("No experiment folders found.")
         return
 
-    experiment_name = os.path.basename(latest_exp_path)
+    experiment_name = get_experiment_name(experiment_path)
     data = []
 
-    for task_folder in os.listdir(latest_exp_path):
-        task_path = os.path.join(latest_exp_path, task_folder)
+    print(f'Extracting results from `{experiment_path}`...')
+    task_folders = [
+        os.path.join(experiment_path, f)
+        for f in os.listdir(experiment_path)
+        if os.path.isdir(os.path.join(experiment_path, f))
+    ]
+    task_folders = sorted(task_folders, key=os.path.getctime)
+
+    print(f"Found {len(task_folders)} task folders.")
+    for task_folder in task_folders:
+        task_path = os.path.join(experiment_path, task_folder)
         if not os.path.isdir(task_path):
             continue
-        task_name = task_folder.replace("_", ":")
+        
+        task_name = get_task_name(task_folder)
 
         for run_folder in os.listdir(task_path):
             run_path = os.path.join(task_path, run_folder)
@@ -99,7 +119,7 @@ def extract_and_append_summary(latest_exp_path, summary_csv="results/all_experim
             if os.path.exists(csv_file):
                 try:
                     #cpu = compute_cpu_energy_from_csv(csv_file)
-                    cpu = compute_cpu_energy_from_csv(csv_file, os.path.join(latest_exp_path, "idle_consumption.csv"))
+                    cpu = compute_cpu_energy_from_csv(csv_file, os.path.join(experiment_path, "idle_consumption.csv"))
                     ram = compute_ram_energy_from_csv(csv_file)
 
                     run_number = int(run_folder)
@@ -122,3 +142,29 @@ def extract_and_append_summary(latest_exp_path, summary_csv="results/all_experim
         print(f"Appended {len(df)} rows to {summary_csv}")
     else:
         print("No valid results found in latest experiment.")
+
+def get_experiment_name(path_to_experiment_folder):
+    experiment_name = os.path.basename(path_to_experiment_folder)
+    return experiment_name
+
+def get_task_name(path_to_task_folder):
+    task_name = os.path.basename(path_to_task_folder)
+    return task_name
+        
+def aggregate_all_results():
+    if global_vars.PROJECT_REPOSITORY_PATH is None:
+            print('Project folder is not selected, not updating data')
+            return
+    
+    experiments_folder = os.path.join(global_vars.PROJECT_REPOSITORY_PATH, 'experiment_results')
+    csv_path = get_summary_csv_path()
+    
+    df = pd.read_csv(csv_path)
+    
+    for f in os.listdir(experiments_folder):
+        experiment_path = os.path.join(experiments_folder, f)
+        experiment_name = get_experiment_name(experiment_path)
+        if os.path.isdir(experiment_path) and experiment_name not in df['Experiment'].values and experiment_name != 'aggregated':
+            extract_and_append_summary(experiment_path)
+    
+    

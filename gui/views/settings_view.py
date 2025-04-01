@@ -5,7 +5,9 @@ from tkinter import ttk, messagebox, filedialog
 import threading
 import queue
 
-from logic.experiment_setup import getTasks, run_experiment, set_energibridge_path, set_gradle_repository_path
+import global_vars
+from global_vars import set_project_repository_path
+from logic.experiment_setup import getTasks, run_experiment, set_energibridge_path
 
 
 class SettingsView(tk.Frame):
@@ -200,9 +202,9 @@ class SettingsView(tk.Frame):
 
     def browse_folder(self):
         gradle_file = filedialog.askopenfilename(title="Pick a gradle.build file", filetypes=[("Gradle Build File", "*.gradle;*.gradle.kts"), ("All files", "*.*")])
-        set_gradle_repository_path(os.path.dirname(gradle_file))
+        # set_gradle_repository_path(os.path.dirname(gradle_file))
         if gradle_file:
-            self.repository = gradle_file
+            set_project_repository_path(os.path.dirname(gradle_file))
             self.label.config(text=f"Found: {gradle_file}")
             self.updateTaskList()
         else:
@@ -282,7 +284,7 @@ class SettingsView(tk.Frame):
 
 
     def updateTaskList(self):
-        if self.repository is None:
+        if global_vars.PROJECT_REPOSITORY_PATH is None:
             messagebox.showerror("Error", "Please select a Gradle project folder.")
             return
         for widget in self.scrollable_frame.winfo_children():
@@ -309,7 +311,7 @@ class SettingsView(tk.Frame):
             self.update_label("Experiment completed.")
             #self.run_button.config(state='normal')
             self.running = False
-            if (self.repository):
+            if global_vars.PROJECT_REPOSITORY_PATH is not None:
                 self.run_button.config(state='normal')
         except queue.Empty:
             # If empty, check again after 1000ms

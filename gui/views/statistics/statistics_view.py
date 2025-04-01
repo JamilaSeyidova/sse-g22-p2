@@ -3,8 +3,10 @@ from tkinter import ttk
 import pandas as pd
 import os
 
+import global_vars
 from gui.views.statistics.bar_chart import BarChart
 from gui.views.statistics.pie_chart import PieChart
+from logic.experiment_summary import aggregate_all_results, get_summary_csv_path
 
 class StatisticsView(tk.Frame):
 
@@ -12,19 +14,7 @@ class StatisticsView(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        csv_path = "results/all_experiments_summary.csv"
-
-        # Create the CSV file with headers if it doesn't exist
-        if not os.path.exists(csv_path):
-            os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-            pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy']).to_csv(csv_path,
-                                                                                                   index=False)
-        # DataFrame Setup
-        try:
-            self.df = pd.read_csv(csv_path)
-        except Exception as e:
-            print(f"Error loading CSV: {e}")
-            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy'])
+        self.init_data()
 
         self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -79,9 +69,40 @@ class StatisticsView(tk.Frame):
         self.reload_status.grid(row=3, column=0, sticky="w", padx=10, pady=(0, 5))
 
         self.update()
+        
+    def init_data(self):
+        if global_vars.PROJECT_REPOSITORY_PATH is None:
+            print('Project folder is not selected, not initializing statistics views')
+            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy'])
+            return
+        
+        # csv_path = "results/all_experiments_summary.csv"
+        csv_path = get_summary_csv_path()
+
+        # Create the CSV file with headers if it doesn't exist
+        if not os.path.exists(csv_path):
+            os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+            pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy']).to_csv(csv_path,
+                                                                                                   index=False)
+        
+        aggregate_all_results()
+        
+        # DataFrame Setup
+        try:
+            self.df = pd.read_csv(csv_path)
+        except Exception as e:
+            print(f"Error loading CSV: {e}")
+            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy'])
 
     def update(self, event=None):
-        csv_path = "results/all_experiments_summary.csv"
+        if global_vars.PROJECT_REPOSITORY_PATH is None:
+            print('Project folder is not selected, not updating statistics views')
+            return
+        # csv_path = "results/all_experiments_summary.csv"
+        
+        self.init_data()
+        csv_path = get_summary_csv_path()
+        
         try:
             self.df = pd.read_csv(csv_path)
             self.reload_status.config(text="CSV successfully loaded.")
