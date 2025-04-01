@@ -122,19 +122,46 @@ def getTasks(cmd="build"):
     # process.wait()
     
     tasks = [
-        ':junit-jupiter-engine:jar',
-        ':junit-jupiter-engine:javadocJar',
-        ':junit-jupiter-engine:sourcesJar',
-        ':junit-jupiter-engine:assemble',
-        ':junit-jupiter-engine:checkstyleMain',
-        ':junit-jupiter-engine:checkstyleTest',
-        ':junit-jupiter-engine:checkstyleTestFixtures',
-        ':junit-jupiter-engine:spotlessCheck',
-        ':junit-jupiter-engine:test',
-        ':junit-jupiter-engine:validateNativeImageProperties',
-        ':junit-jupiter-engine:verifyOSGi',
-        ':junit-jupiter-engine:check',
-        ':junit-jupiter-engine:build',
+        
+        ':cruise-control:jar',
+        ':cruise-control:assemble',
+        
+        ':cruise-control:checkstyleIntegrationTest',
+        ':cruise-control:checkstyleMain',
+        ':cruise-control:checkstyleTest',
+        ':cruise-control:spotbugsIntegrationTest',
+        ':cruise-control:spotbugsMain',
+        ':cruise-control:spotbugsTest',
+        ':cruise-control:test',
+        ':cruise-control:check',
+        
+        ':cruise-control:build',
+        
+        
+        ':cruise-control-core:jar',
+        ':cruise-control-core:assemble',
+        
+        ':cruise-control-core:checkstyleMain',
+        ':cruise-control-core:checkstyleTest',
+        ':cruise-control-core:spotbugsMain',
+        ':cruise-control-core:spotbugsTest',
+        ':cruise-control-core:test',
+        ':cruise-control-core:check',
+        
+        ':cruise-control-core:build',
+        
+        
+        ':cruise-control-metrics-reporter:jar',
+        ':cruise-control-metrics-reporter:assemble',
+        
+        ':cruise-control-metrics-reporter:checkstyleMain',
+        ':cruise-control-metrics-reporter:checkstyleTest',
+        ':cruise-control-metrics-reporter:spotbugsMain',
+        ':cruise-control-metrics-reporter:spotbugsTest',
+        ':cruise-control-metrics-reporter:test',
+        ':cruise-control-metrics-reporter:check',
+        
+        ':cruise-control-metrics-reporter:build',
     ]
     return tasks
 
