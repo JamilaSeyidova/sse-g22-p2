@@ -34,7 +34,7 @@ def compute_cpu_energy_direct(csv_path, idle_path):
 def compute_cpu_energy_from_power(csv_path, idle_path):
     df = pd.read_csv(csv_path)
     power_col = "SYSTEM_POWER (Watts)" if "SYSTEM_POWER (Watts)" in df.columns else "CPU_POWER (Watts)"
-    df["Delta_seconds"] = df["Delta"] / 1_000_000
+    df["Delta_seconds"] = df["Delta"] / 1_000
     df["Energy_Joules"] = df[power_col] * df["Delta_seconds"]
     energy_consumed = compute_idle_energy_compensation(idle_path, df["Delta_seconds"].sum(), df["Energy_Joules"].sum())
     return energy_consumed

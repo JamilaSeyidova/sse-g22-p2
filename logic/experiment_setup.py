@@ -4,6 +4,7 @@ import os
 import time
 import datetime
 import random
+import stat
 
 from logic.experiment_summary import extract_and_append_summary
 
@@ -27,9 +28,14 @@ def set_energibridge_path(path):
     return energibridge_path
 
 def build_gradle_and_clean_commands(energibridge_path, output_dir, task: str):
+    gradlew_path = os.path.join(repository, "gradlew")
     output_file = os.path.join(output_dir, "results.csv")
 
-    gradle_command = f'gradlew {task}'
+    # Ensure gradlew is executable (for Unix/macOS)
+    if os.name != 'nt':
+        os.chmod(gradlew_path, os.stat(gradlew_path).st_mode | stat.S_IEXEC)
+
+    gradle_command = f'{gradlew_path} {task}'
 
     if os.name == 'nt':
         shell_command = f'cmd /c "{gradle_command}"'
@@ -77,12 +83,19 @@ def warmup_hardware(duration=300):
     print(f"Hardware warmup complete after {total_time:.2f} seconds with {iterations} Fibonacci calculations.\n")
     time.sleep(60)
 
+
 def idle_consumption(output_file):
     """
-    Measure the idle consumption of the system for 60s.
+    Measure the idle consumption of the system for 15 seconds.
     """
-    gradle_command = f'"{energibridge_path}" -o "{output_file}" --summary timeout /T 15'
+    if os.name == 'nt':
+        idle_command = 'timeout /T 15'
+    else:
+        idle_command = 'sleep 15'
+
+    gradle_command = f'"{energibridge_path}" -o "{output_file}" --summary {idle_command}'
     result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=repository)
+
     print(f"Idle consumption measured for 15 seconds. Output saved to {output_file}.")
     return result
 

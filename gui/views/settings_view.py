@@ -1,4 +1,5 @@
 import os
+import platform
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
@@ -198,29 +199,69 @@ class SettingsView(tk.Frame):
     def update_label(self, text:str):
         self.label.config(text=text, foreground="#4CAF50")  # Green text
 
-
     def browse_folder(self):
-        gradle_file = filedialog.askopenfilename(title="Pick a gradle.build file", filetypes=[("Gradle Build File", "*.gradle;*.gradle.kts"), ("All files", "*.*")])
-        set_gradle_repository_path(os.path.dirname(gradle_file))
-        if gradle_file:
-            self.repository = gradle_file
-            self.label.config(text=f"Found: {gradle_file}")
-            self.updateTaskList()
-        else:
-            self.label.config(text="gradle.build file not found")
+        folder = filedialog.askdirectory(title="Select a Gradle project folder")
+        if folder:
+            for fname in ["build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"]:
+                candidate = os.path.join(folder, fname)
+                if os.path.isfile(candidate):
+                    set_gradle_repository_path(folder)
+                    self.repository = candidate
+                    self.label.config(text=f"Found: {os.path.basename(candidate)}")
+                    self.run_button.config(state='normal')
+                    self.updateTaskList()
+                    return
+            self.label.config(text="No valid Gradle file found in selected folder")
             self.run_button.config(state='disabled')
+        else:
+            self.label.config(text="No folder selected")
+            self.run_button.config(state='disabled')
+
+    # def browse_folder_energibridge(self):
+    #     energibridge_path = filedialog.askopenfilename(title="Pick a file in the target folder", filetypes=[("Executables", "*.exe;*.out;*.sh;"), ("All files", "*.*")])
+    #     energibridge_path = set_energibridge_path(energibridge_path)
+    #     if energibridge_path:
+    #         self.label.config(text=f"Found: {energibridge_path}")
+    #         if not self.running:
+    #             self.run_button.config(state='normal')
+    #     else:
+    #         self.label.config(text="energibridge.exe not found")
+    #         self.run_button.config(state='disabled')
+
+
+    def find_energibridge_executable(self, folder_path):
+        """Search for energibridge executable in the selected folder."""
+        candidates = ["energibridge", "energibridge.exe", "energibridge.sh", "energibridge.out"]
+
+        for filename in os.listdir(folder_path):
+            full_path = os.path.join(folder_path, filename)
+            if filename.lower() in candidates and os.path.isfile(full_path):
+                if platform.system() == "Windows":
+                    if filename.lower().endswith((".exe", ".bat", ".cmd")):
+                        return full_path
+                else:
+                    if os.access(full_path, os.X_OK):
+                        return full_path
+        return None
 
     def browse_folder_energibridge(self):
-        energibridge_path = filedialog.askopenfilename(title="Pick a file in the target folder", filetypes=[("Executables", "*.exe;*.out;*.sh;"), ("All files", "*.*")])
-        energibridge_path = set_energibridge_path(energibridge_path)
-        if energibridge_path:
-            self.label.config(text=f"Found: {energibridge_path}")
-            if not self.running:
-                self.run_button.config(state='normal')
-        else:
-            self.label.config(text="energibridge.exe not found")
-            self.run_button.config(state='disabled')
+        folder_path = filedialog.askdirectory(
+            title="Select the folder containing energibridge"
+        )
 
+        if folder_path:
+            executable_path = self.find_energibridge_executable(folder_path)
+            if executable_path:
+                executable_path = set_energibridge_path(executable_path)
+                self.label.config(text=f"Found: {executable_path}")
+                if not self.running:
+                    self.run_button.config(state='normal')
+            else:
+                self.label.config(text="energibridge executable not found in folder")
+                self.run_button.config(state='disabled')
+        else:
+            self.label.config(text="No folder selected")
+            self.run_button.config(state='disabled')
 
     def getEnabledTasks(self):
         enabled_tasks = []

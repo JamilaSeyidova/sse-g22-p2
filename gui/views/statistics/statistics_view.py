@@ -71,8 +71,14 @@ class StatisticsView(tk.Frame):
         self.bar_view.pack(fill="both", expand=True)
 
         # Reload CSV Button
-        reload_btn = ttk.Button(self, text="Reload CSV", command=self.update)
-        reload_btn.grid(row=1, column=1, sticky="e", padx=10)
+        bottom_frame = ttk.Frame(self)
+        bottom_frame.grid(row=3, column=0, columnspan=2, sticky="ew", padx=10, pady=(0, 10))
+
+        self.reload_status = ttk.Label(bottom_frame, text="", foreground="green")
+        self.reload_status.pack(side="left")
+
+        reload_btn = ttk.Button(bottom_frame, text="Reload CSV", command=self.update)
+        reload_btn.pack(side="right")
 
         # Reload status label (MUST be before calling self.update())
         self.reload_status = ttk.Label(self, text="", foreground="green")
