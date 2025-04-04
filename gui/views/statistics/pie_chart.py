@@ -70,6 +70,10 @@ class PieChart(tk.Frame):
         base_colors = sns.color_palette("pastel")
         colors = base_colors * (len(avg_energy) // len(base_colors) + 1)
 
+        if avg_energy.empty or avg_energy.isna().all() or avg_energy.sum() == 0:
+            print("Skipping pie chart: data is empty, all NaN, or zero.")
+            return
+
         # Draw the pie chart
         wedges, _, autotexts = ax.pie(
             avg_energy,

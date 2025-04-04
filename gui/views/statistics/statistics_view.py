@@ -17,14 +17,14 @@ class StatisticsView(tk.Frame):
         # Create the CSV file with headers if it doesn't exist
         if not os.path.exists(csv_path):
             os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-            pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy']).to_csv(csv_path,
+            pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'CPU Idle', 'CPU Compensation', 'RAM Energy']).to_csv(csv_path,
                                                                                                    index=False)
         # DataFrame Setup
         try:
             self.df = pd.read_csv(csv_path)
         except Exception as e:
             print(f"Error loading CSV: {e}")
-            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy'])
+            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'CPU Idle', 'CPU Compensation', 'RAM Energy'])
 
         self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -93,7 +93,7 @@ class StatisticsView(tk.Frame):
             self.reload_status.config(text="CSV successfully loaded.")
         except Exception as e:
             print(f"Error loading CSV: {e}")
-            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'RAM Energy'])
+            self.df = pd.DataFrame(columns=['Experiment', 'Task', 'Run', 'CPU Energy', 'CPU Idle', 'CPU Compensation', 'RAM Energy'])
             self.reload_status.config(text="Failed to reload CSV.")
 
         energy_type = self.energy_type_var.get()

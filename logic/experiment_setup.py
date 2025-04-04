@@ -101,49 +101,49 @@ def idle_consumption(output_file):
 
 
 def getTasks(cmd="build"):
-    # command = f"gradle {cmd} --rerun-tasks --dry-run"
-    # print("Running command to get tasks: ", command)
-    # print("This may take a while...")
-    # print("Please wait...\n")
-    # process = subprocess.Popen(
-    #     command,
-    #     shell=True,
-    #     cwd=repository,
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.STDOUT,
-    #     text=True
-    # )
-    # regex = re.compile(r"^(\S+) SKIPPED")
-    # tasks = []
-    # output_lines = []
+    command = f"gradle {cmd} --rerun-tasks --dry-run"
+    print("Running command to get tasks: ", command)
+    print("This may take a while...")
+    print("Please wait...\n")
+    process = subprocess.Popen(
+        command,
+        shell=True,
+        cwd=repository,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True
+    )
+    regex = re.compile(r"^(\S+) SKIPPED")
+    tasks = []
+    output_lines = []
 
-    # for line in process.stdout:
-    #     print(line, end='')
-    #     output_lines.append(line)
+    for line in process.stdout:
+        print(line, end='')
+        output_lines.append(line)
 
-    #     match = regex.match(line)
-    #     if match:
-    #         task = match.group(1)
-    #         print(f"Found task: {task}")
-    #         tasks.append(task)
+        match = regex.match(line)
+        if match:
+            task = match.group(1)
+            print(f"Found task: {task}")
+            tasks.append(task)
 
-    # process.wait()
+    process.wait()
     
-    tasks = [
-        ':junit-jupiter-engine:jar',
-        ':junit-jupiter-engine:javadocJar',
-        ':junit-jupiter-engine:sourcesJar',
-        ':junit-jupiter-engine:assemble',
-        ':junit-jupiter-engine:checkstyleMain',
-        ':junit-jupiter-engine:checkstyleTest',
-        ':junit-jupiter-engine:checkstyleTestFixtures',
-        ':junit-jupiter-engine:spotlessCheck',
-        ':junit-jupiter-engine:test',
-        ':junit-jupiter-engine:validateNativeImageProperties',
-        ':junit-jupiter-engine:verifyOSGi',
-        ':junit-jupiter-engine:check',
-        ':junit-jupiter-engine:build',
-    ]
+    # tasks = [
+    #     ':junit-jupiter-engine:jar',
+    #     ':junit-jupiter-engine:javadocJar',
+    #     ':junit-jupiter-engine:sourcesJar',
+    #     ':junit-jupiter-engine:assemble',
+    #     ':junit-jupiter-engine:checkstyleMain',
+    #     ':junit-jupiter-engine:checkstyleTest',
+    #     ':junit-jupiter-engine:checkstyleTestFixtures',
+    #     ':junit-jupiter-engine:spotlessCheck',
+    #     ':junit-jupiter-engine:test',
+    #     ':junit-jupiter-engine:validateNativeImageProperties',
+    #     ':junit-jupiter-engine:verifyOSGi',
+    #     ':junit-jupiter-engine:check',
+    #     ':junit-jupiter-engine:build',
+    # ]
     return tasks
 
 
