@@ -137,13 +137,13 @@ class SettingsView(tk.Frame):
         buttons_frame.pack(side=tk.TOP, pady=5)
 
         # EnergiBridge directory selection button
-        enerB_button = ttk.Button(buttons_frame, text="Select EnergiBridge Directory", 
-                                  command=self.browse_folder_energibridge, style="browse.TButton")
+        enerB_button = ttk.Button(buttons_frame, text="Select EnergiBridge Executable", 
+                                  command=self.browse_folder_energibridge, style="browse.TButton", width=28)
         enerB_button.pack(side=tk.LEFT, padx=(0, 5))
 
         # Gradle project selection button
         browse_button = ttk.Button(buttons_frame, text="Select Gradle Project", 
-                                  command=self.browse_folder, style="browse.TButton")
+                                  command=self.browse_folder, style="browse.TButton", width=28)
         browse_button.pack(side=tk.LEFT)
 
         frame1 = ttk.Frame(self)
