@@ -20,7 +20,6 @@ class App(tk.Tk):
         self.frames = {}
         self._init_views()
         self.show_frame("HomeView")
-
         # Register clean shutdown handler
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 

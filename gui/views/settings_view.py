@@ -72,7 +72,7 @@ class SettingsView(tk.Frame):
         style.map("help.TButton", background=[("active", "#1976D2")], foreground=[("disabled", "gray")])
 
         header_frame = ttk.Frame(self, style="TFrame")
-        header_frame.pack(side="top", fill="x", padx=10, pady=(10, 20))
+        header_frame.pack(side="top", fill="x", padx=10, pady=(10, 10))
 
         label = ttk.Label(header_frame, text="Settings View", font=("Helvetica", 18, "bold"), style="TLabel")
         label.pack(side="left")
@@ -89,12 +89,12 @@ class SettingsView(tk.Frame):
         home_btn.pack(side="right")
 
         # Main content frame
-        main_frame = ttk.Frame(self, style="TFrame", padding=20)
+        main_frame = ttk.Frame(self, style="TFrame", padding=5)
         main_frame.pack(expand=True, fill="both", anchor="center")
 
 
         # Entries (fields)
-        ttk.Label(self, text="Experiment Name:", style="TLabel").pack(pady=5)
+        ttk.Label(self, text="Experiment Name:", style="TLabel").pack(pady=(0, 5))
         self.exp_name_entry = ttk.Entry(self, style="TEntry", width=30)
         self.exp_name_entry.pack(pady=5)
         self.exp_name_entry.insert(0, "My Experiment")
@@ -107,6 +107,14 @@ class SettingsView(tk.Frame):
         self.iterations_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
         self.iterations_entry.pack(pady=5)
         self.iterations_entry.insert(0, "30")
+        
+        frame1 = ttk.Frame(self)
+        frame1.pack(pady=5)
+        ttk.Label(frame1, text="Timeout between tasks (s):", style="TLabel").pack(side="left")
+        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
+        self.timeout_task_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
+        self.timeout_task_entry.pack(pady=5)
+        self.timeout_task_entry.insert(0, "60")
 
         frame1 = ttk.Frame(self)
         frame1.pack(pady=5)
@@ -114,23 +122,14 @@ class SettingsView(tk.Frame):
         ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between repetitions (s)", self.HELP_TEXTS["timeout_repetitions"])).pack(side="left", padx=5)
         self.timeout_rep_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
         self.timeout_rep_entry.pack(pady=5)
-        self.timeout_rep_entry.insert(0, "60")
-
-        frame1 = ttk.Frame(self)
-        frame1.pack(pady=5)
-        ttk.Label(frame1, text="Timeout between tasks (s):", style="TLabel").pack(side="left")
-        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
-        self.timeout_task_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
-        self.timeout_task_entry.pack(pady=5)
-        self.timeout_task_entry.insert(0, "300")
-        
+        self.timeout_rep_entry.insert(0, "300")
 
 
         # Checkbox for hardware warmup
         self.warmup_var = tk.IntVar()
         warmup_frame = ttk.Frame(self)
         warmup_frame.pack(pady=5)
-        self.warmup_check = ttk.Checkbutton(warmup_frame, text="Perform hardware warmup ", variable=self.warmup_var)
+        self.warmup_check = ttk.Checkbutton(warmup_frame, text="Perform warmup", variable=self.warmup_var)
         self.warmup_check.pack(side="left")
         ttk.Button(warmup_frame, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Warmup", self.HELP_TEXTS["warmup"])).pack(side="left", padx=5)
         
@@ -138,7 +137,7 @@ class SettingsView(tk.Frame):
         buttons_frame.pack(side=tk.TOP, pady=5)
 
         # EnergiBridge directory selection button
-        enerB_button = ttk.Button(buttons_frame, text="Select EnergiBridge Executable",
+        enerB_button = ttk.Button(buttons_frame, text="Select EnergiBridge Directory", 
                                   command=self.browse_folder_energibridge, style="browse.TButton")
         enerB_button.pack(side=tk.LEFT, padx=(0, 5))
 
@@ -153,7 +152,7 @@ class SettingsView(tk.Frame):
         # ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
 
         frame2 = ttk.Frame(self)
-        frame2.pack(pady=5)
+        frame2.pack(pady=1)
         self.command_entry = ttk.Entry(frame2, style="TEntry", width=30)
         self.command_entry.pack(pady=6, side="left")
         self.command_entry.insert(0, "build")
@@ -175,7 +174,7 @@ class SettingsView(tk.Frame):
 
         # Scrollable frame for task list
         container = ttk.Frame(self, height=150)
-        container.pack(fill="x", pady=10)
+        container.pack(fill="x", pady=10, anchor='n')
         container.pack_propagate(False)  # 💡 Important!
 
         canvas = tk.Canvas(container, bg="white", highlightthickness=0, height=300)
@@ -207,7 +206,7 @@ class SettingsView(tk.Frame):
 
         
         self.label = ttk.Label(self, text="", style="TLabel")
-        self.label.pack(pady=20)
+        self.label.pack(pady=5)
 
         # Run Experiment button
         self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper,
