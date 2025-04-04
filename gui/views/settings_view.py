@@ -26,27 +26,27 @@ class SettingsView(tk.Frame):
     message_queue = queue.Queue()
 
     HELP_TEXTS = {
-         "iterations": "Repeating the experiment improves measurement reliability.\nRecommended: 30+ iterations for statistical significance.",
-         "timeout_repetitions": "Rest between repetitions helps stabilize system temperature and avoids tail energy consumption.\nRecommended: 60 seconds depending on task duration and computational intesity.",
-         "timeout_tasks": "Pause between tasks prevents overlap and system noise during measurements of different tasks.\nRecommended: 5 minutes depending on task duration and computational intesity.\nIn case of timeout > 120s, another warmup session is executed.",
-         "warmup": "Perform a warmup run to stabilize hardware temperature avoiding bias from cooler initial runs.\nBest practice: run CPU-intensive tasks, in our case 5 minutes of Fibonacci sequence.",
-         "system_precautions": 
-         """ Zen Mode:
-         - all applications should be closed, notifications should be turned off;
-         - only the required hardware should be connected (avoid USB drives, external disks, external displays, etc.);
-         - turn off notifications;
-         - remove any unnecessary services running in the background (e.g., web server, file sharing, etc.);
-         - if you do not need an internet or intranet connection, switch off your network;
-         - prefer cable over wireless: the energy consumption from a cable connection is more stable than from a wireless connection.
-         
-         \nFreeze and report your settings:
-         - Fix screen brightness/resolution.
-         - Fix energy settings (e.g., disable screen saver, sleep mode, etc.).
- 
-         \nKeep it cool:
-         - Run experiments in a stable-temperature room.
-         - If not possible, consider logging temperature and discarding outliers."""
-     }
+        "iterations": "Repeating the experiment improves measurement reliability.\nRecommended: 30+ iterations for statistical significance.",
+        "timeout_repetitions": "Rest between repetitions prevents overlap and system noise during measurements of different repetitions.\nRecommended: 5 minutes depending on task duration and computational intesity.\nIn case of timeout > 120s, another warmup session is executed.",
+        "timeout_tasks": "Pause between tasks helps stabilize system temperature and avoids tail energy consumption.\nRecommended: 60 seconds depending on task duration and computational intesity.",
+        "warmup": "Perform a warmup run to stabilize hardware temperature avoiding bias from cooler initial runs.\nBest practice: run CPU-intensive tasks, in our case 5 minutes of Fibonacci sequence.",
+        "system_precautions":
+            """ Zen Mode:
+            - all applications should be closed, notifications should be turned off;
+            - only the required hardware should be connected (avoid USB drives, external disks, external displays, etc.);
+            - turn off notifications;
+            - remove any unnecessary services running in the background (e.g., web server, file sharing, etc.);
+            - if you do not need an internet or intranet connection, switch off your network;
+            - prefer cable over wireless: the energy consumption from a cable connection is more stable than from a wireless connection.
+
+            \nFreeze and report your settings:
+            - Fix screen brightness/resolution.
+            - Fix energy settings (e.g., disable screen saver, sleep mode, etc.).
+
+            \nKeep it cool:
+            - Run experiments in a stable-temperature room.
+            - If not possible, consider logging temperature and discarding outliers."""
+    }
     
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -124,27 +124,7 @@ class SettingsView(tk.Frame):
         self.timeout_task_entry.pack(pady=5)
         self.timeout_task_entry.insert(0, "300")
         
-        frame1 = ttk.Frame(self)
-        frame1.pack(pady=5)
-        ttk.Label(frame1, text="Gradle task", style="TLabel").pack(side="left")
-        #ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
 
-        frame2 = ttk.Frame(self)
-        frame2.pack(pady=5)
-        self.command_entry = ttk.Entry(frame2, style="TEntry", width=30)
-        self.command_entry.pack(pady=6, side="left")
-        self.command_entry.insert(0, "build")
-        ttk.Button(frame2, text="Refresh", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(side="right", padx=5)
-
-        frame3 = ttk.Frame(self)
-        frame3.pack(pady=5)
-
-        self.filter_entry = ttk.Entry(frame3, style="TEntry", width=30)
-        self.filter_entry.pack(pady=6, side="left")
-        self.filter_entry.insert(0, "*")  # Wildcard by default
-
-        ttk.Button(frame3, text="Filter", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(
-            side="right", padx=5)
 
         # Checkbox for hardware warmup
         self.warmup_var = tk.IntVar()
@@ -167,15 +147,38 @@ class SettingsView(tk.Frame):
                                   command=self.browse_folder, style="browse.TButton")
         browse_button.pack(side=tk.LEFT)
 
-        # Run Experiment button
-        self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper, style="run.TButton", state='disabled')
-        self.run_button.pack(side=tk.TOP, fill="x", pady=10)
+        frame1 = ttk.Frame(self)
+        frame1.pack(pady=5)
+        ttk.Label(frame1, text="Gradle task", style="TLabel").pack(side="left")
+        # ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
+
+        frame2 = ttk.Frame(self)
+        frame2.pack(pady=5)
+        self.command_entry = ttk.Entry(frame2, style="TEntry", width=30)
+        self.command_entry.pack(pady=6, side="left")
+        self.command_entry.insert(0, "build")
+        ttk.Button(frame2, text="Refresh", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(
+            side="right", padx=5)
+
+        frame3 = ttk.Frame(self)
+        frame3.pack(pady=5)
+
+        self.filter_entry = ttk.Entry(frame3, style="TEntry", width=30)
+        self.filter_entry.pack(pady=6, side="left")
+        self.filter_entry.insert(0, "*")  # Wildcard by default
+
+        ttk.Button(frame3, text="Filter", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(
+            side="left", padx=5)
+
+        ttk.Button(frame3, text="Deselect All Tasks", style="help.TButton",
+                   command=self.deselect_all_tasks).pack(side="left", padx=5)
 
         # Scrollable frame for task list
-        container = ttk.Frame(self)
-        container.pack(fill="both", expand=True, pady=10)
+        container = ttk.Frame(self, height=150)
+        container.pack(fill="x", pady=10)
+        container.pack_propagate(False)  # 💡 Important!
 
-        canvas = tk.Canvas(container, bg="white", highlightthickness=0)
+        canvas = tk.Canvas(container, bg="white", highlightthickness=0, height=300)
         canvas.pack(side="left", fill="both", expand=True)
 
         scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
@@ -205,6 +208,11 @@ class SettingsView(tk.Frame):
         
         self.label = ttk.Label(self, text="", style="TLabel")
         self.label.pack(pady=20)
+
+        # Run Experiment button
+        self.run_button = ttk.Button(self, text="Run Experiment", command=self.run_experiment_wrapper,
+                                     style="run.TButton", state='disabled')
+        self.run_button.pack(side=tk.TOP, fill="x", pady=10)
 
     def update_label(self, text:str):
         self.label.config(text=text, foreground="#4CAF50")  # Green text
@@ -337,6 +345,9 @@ class SettingsView(tk.Frame):
             messagebox.showerror("Error", "Please select a Gradle project folder.")
             return
 
+        #Preserve previous selections
+        previous_selections = getattr(self, 'task_dict', {}).copy()
+
         # Clear current checkboxes
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
@@ -345,11 +356,21 @@ class SettingsView(tk.Frame):
         task_list = getTasks(self.command_entry.get())
         filter_text = self.filter_entry.get().strip().lower()
 
-        for task in task_list:
-            var = tk.IntVar(value=0)  # Default deselected
+        #Pre-check if we are using wildcard
+        is_wildcard = filter_text == "*"
 
-            # Auto-select tasks matching filter
-            if not filter_text or filter_text == "*" or filter_text in task.lower():
+        for task in task_list:
+            var = tk.IntVar(value=0)  # Start deselected
+
+            # Keep previous selection
+            if task in previous_selections and previous_selections[task].get() == 1:
+                var.set(1)
+
+            # If wildcard, select all
+            if is_wildcard:
+                var.set(1)
+            # Else, if matches filter, select
+            elif filter_text and filter_text in task.lower():
                 var.set(1)
 
             self.task_dict[task] = var
@@ -411,3 +432,8 @@ class SettingsView(tk.Frame):
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2
         help_window.geometry(f"+{x}+{y}")
+
+    def deselect_all_tasks(self):
+        if hasattr(self, 'task_dict'):
+            for var in self.task_dict.values():
+                var.set(0)

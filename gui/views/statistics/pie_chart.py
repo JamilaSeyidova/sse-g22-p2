@@ -101,7 +101,7 @@ class PieChart(tk.Frame):
 
         total = avg_energy.sum()
         labels = [
-            f"{task} ({energy / total * 100:.1f}%)"
+            f"{task} ({energy / total * 100:.1f}%) - {energy:.2f} J"
             for task, energy in avg_energy.items()
         ]
 
