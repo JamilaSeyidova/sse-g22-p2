@@ -218,22 +218,35 @@ class SettingsView(tk.Frame):
         self.label.config(text=text, foreground="#4CAF50")  # Green text
 
     def browse_folder(self):
-        folder = filedialog.askdirectory(title="Select a Gradle project folder")
-        if folder:
-            for fname in ["build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"]:
-                candidate = os.path.join(folder, fname)
-                if os.path.isfile(candidate):
-                    set_gradle_repository_path(folder)
-                    self.repository = candidate
-                    self.label.config(text=f"Found: {os.path.basename(candidate)}")
-                    self.run_button.config(state='normal')
-                    self.updateTaskList()
-                    return
-            self.label.config(text="No valid Gradle file found in selected folder")
-            self.run_button.config(state='disabled')
+        # Check if system is Windows
+        if os.name == "nt":
+            # Windows: use filtered dialog
+            filetypes = [("Gradle Build File", "*.gradle;*.gradle.kts"), ("All files", "*.*")]
         else:
-            self.label.config(text="No folder selected")
+            # macOS/Linux: show all files
+            filetypes = [("All files", "*.*")]
+
+        gradle_file = filedialog.askopenfilename(
+            title="Pick a gradle.build file",
+            filetypes=filetypes
+        )
+
+        if gradle_file:
+            # For non-Windows systems, validate manually
+            if os.name != "nt" and not gradle_file.endswith((".gradle", ".gradle.kts")):
+                messagebox.showerror("Invalid file", "Please select a .gradle or .gradle.kts file.")
+                self.label.config(text="gradle.build file not found")
+                self.run_button.config(state='disabled')
+                return
+
+            set_gradle_repository_path(os.path.dirname(gradle_file))
+            self.repository = gradle_file
+            self.label.config(text=f"Found: {gradle_file}")
+            self.updateTaskList()
+        else:
+            self.label.config(text="gradle.build file not found")
             self.run_button.config(state='disabled')
+
 
     # def browse_folder_energibridge(self):
     #     energibridge_path = filedialog.askopenfilename(title="Pick a file in the target folder", filetypes=[("Executables", "*.exe;*.out;*.sh;"), ("All files", "*.*")])
@@ -246,40 +259,48 @@ class SettingsView(tk.Frame):
     #         self.label.config(text="energibridge.exe not found")
     #         self.run_button.config(state='disabled')
 
-
-    def find_energibridge_executable(self, folder_path):
-        """Search for energibridge executable in the selected folder."""
-        candidates = ["energibridge", "energibridge.exe", "energibridge.sh", "energibridge.out"]
-
-        for filename in os.listdir(folder_path):
-            full_path = os.path.join(folder_path, filename)
-            if filename.lower() in candidates and os.path.isfile(full_path):
-                if platform.system() == "Windows":
-                    if filename.lower().endswith((".exe", ".bat", ".cmd")):
-                        return full_path
-                else:
-                    if os.access(full_path, os.X_OK):
-                        return full_path
-        return None
-
     def browse_folder_energibridge(self):
-        folder_path = filedialog.askdirectory(
-            title="Select the folder containing energibridge"
+        import os
+        from tkinter import filedialog
+
+        if os.name == 'nt':  # Windows
+            filetypes = [("Executables", "*.exe;*.out;*.sh;"), ("All files", "*.*")]
+        else:  # macOS/Linux
+            filetypes = [("All files", "*.*")]
+
+        selected_file = filedialog.askopenfilename(
+            title="Select the energibridge executable",
+            filetypes=filetypes
         )
 
-        if folder_path:
-            executable_path = self.find_energibridge_executable(folder_path)
-            if executable_path:
-                executable_path = set_energibridge_path(executable_path)
-                self.label.config(text=f"Found: {executable_path}")
-                if not self.running:
-                    self.run_button.config(state='normal')
-            else:
-                self.label.config(text="energibridge executable not found in folder")
-                self.run_button.config(state='disabled')
-        else:
-            self.label.config(text="No folder selected")
+        if not selected_file:
+            self.label.config(text="No file selected")
             self.run_button.config(state='disabled')
+            return
+
+        if os.name == 'nt':
+            # Windows: simple extension check
+            if not selected_file.lower().endswith(('.exe', '.out', '.sh')):
+                self.label.config(text="Selected file is not a valid executable")
+                self.run_button.config(state='disabled')
+                return
+        else:
+            # macOS/Linux: check if file is executable
+            if not os.access(selected_file, os.X_OK):
+                self.label.config(text="Selected file is not executable")
+                self.run_button.config(state='disabled')
+                return
+
+        energibridge_path = set_energibridge_path(selected_file)
+
+        if energibridge_path:
+            self.label.config(text=f"Found: {energibridge_path}")
+            if not self.running:
+                self.run_button.config(state='normal')
+        else:
+            self.label.config(text="energibridge not found")
+            self.run_button.config(state='disabled')
+
 
     def getEnabledTasks(self):
         enabled_tasks = []
@@ -385,6 +406,11 @@ class SettingsView(tk.Frame):
         if len(task_list) == 0:
             messagebox.showerror("Input Error", "No tasks found")
 
+
+
+
+
+
     def check_result(self):
         try:
             # Try to get message from queue (non-blocking)
@@ -398,6 +424,10 @@ class SettingsView(tk.Frame):
         except queue.Empty:
             # If empty, check again after 1000ms
             self.after(1000, self.check_result)
+
+
+
+
 
     def show_help(self, title, message):
         help_window = tk.Toplevel(self)

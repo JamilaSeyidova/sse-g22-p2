@@ -128,22 +128,7 @@ def getTasks(cmd="build"):
             tasks.append(task)
 
     process.wait()
-    
-    # tasks = [
-    #     ':junit-jupiter-engine:jar',
-    #     ':junit-jupiter-engine:javadocJar',
-    #     ':junit-jupiter-engine:sourcesJar',
-    #     ':junit-jupiter-engine:assemble',
-    #     ':junit-jupiter-engine:checkstyleMain',
-    #     ':junit-jupiter-engine:checkstyleTest',
-    #     ':junit-jupiter-engine:checkstyleTestFixtures',
-    #     ':junit-jupiter-engine:spotlessCheck',
-    #     ':junit-jupiter-engine:test',
-    #     ':junit-jupiter-engine:validateNativeImageProperties',
-    #     ':junit-jupiter-engine:verifyOSGi',
-    #     ':junit-jupiter-engine:check',
-    #     ':junit-jupiter-engine:build',
-    # ]
+
     return tasks
 
 
