@@ -138,7 +138,7 @@ class SettingsView(tk.Frame):
         buttons_frame.pack(side=tk.TOP, pady=5)
 
         # EnergiBridge directory selection button
-        enerB_button = ttk.Button(buttons_frame, text="Select EnergiBridge Directory", 
+        enerB_button = ttk.Button(buttons_frame, text="Select EnergiBridge Executable",
                                   command=self.browse_folder_energibridge, style="browse.TButton")
         enerB_button.pack(side=tk.LEFT, padx=(0, 5))
 

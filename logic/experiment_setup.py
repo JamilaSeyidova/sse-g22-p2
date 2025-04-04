@@ -27,26 +27,42 @@ def set_energibridge_path(path):
     energibridge_path = path
     return energibridge_path
 
+
 def build_gradle_and_clean_commands(energibridge_path, output_dir, task: str):
-    gradlew_path = os.path.join(repository, "gradlew")
     output_file = os.path.join(output_dir, "results.csv")
 
-    # Ensure gradlew is executable (for Unix/macOS)
-    if os.name != 'nt':
-        os.chmod(gradlew_path, os.stat(gradlew_path).st_mode | stat.S_IEXEC)
-
-    gradle_command = f'{gradlew_path} {task}'
-
     if os.name == 'nt':
+        gradle_command = f'gradlew {task}'
         shell_command = f'cmd /c "{gradle_command}"'
         #clean_command = 'cmd /c "gradlew clean"'
     else:
+        gradle_command = f'./gradlew {task}'
         shell_command = f'sh -c \'{gradle_command}\''
         #clean_command = 'sh -c \'gradle clean\''
 
     full_command = f'"{energibridge_path}" -o "{output_file}" --summary {shell_command}'
     return full_command #, clean_command
-
+#
+# def build_gradle_and_clean_commands(energibridge_path, output_dir, task: str):
+#     gradlew_path = os.path.join(repository, "gradlew")
+#     output_file = os.path.join(output_dir, "results.csv")
+#
+#     # Ensure gradlew is executable (for Unix/macOS)
+#     if os.name != 'nt':
+#         os.chmod(gradlew_path, os.stat(gradlew_path).st_mode | stat.S_IEXEC)
+#
+#     gradle_command = f'{gradlew_path} {task}'
+#
+#     if os.name == 'nt':
+#         shell_command = f'cmd /c "{gradle_command}"'
+#         #clean_command = 'cmd /c "gradlew clean"'
+#     else:
+#         shell_command = f'sh -c \'{gradle_command}\''
+#         #clean_command = 'sh -c \'gradle clean\''
+#
+#     full_command = f'"{energibridge_path}" -o "{output_file}" --summary {shell_command}'
+#     return full_command #, clean_command
+#
 
 def warmup_hardware(duration=300):
     """
@@ -232,7 +248,7 @@ def clean_build_output():
         clean_command = 'cmd /c "gradlew clean"'
     else: 
         ##### TODO: Change command to use gradlew
-        clean_command = 'sh -c \'gradle clean\''
+        clean_command = 'sh -c \'./gradlew clean\''
         
     gradle_root = find_gradle_root()
     subprocess.run(clean_command, shell=True, capture_output=True, text=True, cwd=gradle_root)
