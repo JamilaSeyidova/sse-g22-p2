@@ -1,14 +1,15 @@
 import tkinter as tk
 from gui.views.home_view import HomeView
 from gui.views.statistics.statistics_view import StatisticsView
+from gui.views.settings_view import SettingsView
 import matplotlib.pyplot as plt
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("GRADLENERGY GUI")
-        self.geometry("800x600")
-        self.minsize(600, 400)
+        self.geometry("500x300")
+        self.minsize(500, 300)
 
         self.container = tk.Frame(self)
         self.container.pack(fill="both", expand=True)
@@ -24,7 +25,7 @@ class App(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def _init_views(self):
-        for ViewClass in (HomeView, StatisticsView):
+        for ViewClass in (HomeView, StatisticsView, SettingsView):
             view_name = ViewClass.__name__
             frame = ViewClass(parent=self.container, controller=self)
             self.frames[view_name] = frame
