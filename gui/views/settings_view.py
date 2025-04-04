@@ -136,6 +136,16 @@ class SettingsView(tk.Frame):
         self.command_entry.insert(0, "build")
         ttk.Button(frame2, text="Refresh", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(side="right", padx=5)
 
+        frame3 = ttk.Frame(self)
+        frame3.pack(pady=5)
+
+        self.filter_entry = ttk.Entry(frame3, style="TEntry", width=30)
+        self.filter_entry.pack(pady=6, side="left")
+        self.filter_entry.insert(0, "*")  # Wildcard by default
+
+        ttk.Button(frame3, text="Filter", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(
+            side="right", padx=5)
+
         # Checkbox for hardware warmup
         self.warmup_var = tk.IntVar()
         warmup_frame = ttk.Frame(self)
@@ -322,26 +332,37 @@ class SettingsView(tk.Frame):
 
         self.check_result()
 
-
     def updateTaskList(self):
         if self.repository is None:
             messagebox.showerror("Error", "Please select a Gradle project folder.")
             return
+
+        # Clear current checkboxes
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
+
         self.task_dict = {}
         task_list = getTasks(self.command_entry.get())
+        filter_text = self.filter_entry.get().strip().lower()
+
         for task in task_list:
-            var = tk.IntVar(value=1)
+            var = tk.IntVar(value=0)  # Default deselected
+
+            # Auto-select tasks matching filter
+            if not filter_text or filter_text == "*" or filter_text in task.lower():
+                var.set(1)
+
             self.task_dict[task] = var
             chk = ttk.Checkbutton(self.scrollable_frame, text=task, variable=var, style="task.TCheckbutton")
             chk.pack(anchor="nw", fill="both")
-        self.update_idletasks()
-        if not self.running:
-                    self.run_button.config(state='normal')
-        if len(task_list) == 0:
-             messagebox.showerror("Input Error", "No tasks found")
 
+        self.update_idletasks()
+
+        if not self.running:
+            self.run_button.config(state='normal')
+
+        if len(task_list) == 0:
+            messagebox.showerror("Input Error", "No tasks found")
 
     def check_result(self):
         try:

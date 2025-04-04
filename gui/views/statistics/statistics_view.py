@@ -47,7 +47,7 @@ class StatisticsView(tk.Frame):
         selector_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(10, 0))
         ttk.Label(selector_frame, text="Select Energy Type:").pack(side="left", padx=(0, 10))
         self.energy_type_var = tk.StringVar()
-        energy_options = ['CPU Energy', 'RAM Energy', 'Both']
+        energy_options = ['CPU Energy', 'RAM Energy', 'CPU Compensation', 'Both']
         self.energy_dropdown = ttk.Combobox(selector_frame, textvariable=self.energy_type_var, values=energy_options, state="readonly", width=15)
         self.energy_dropdown.current(0)
         self.energy_dropdown.pack(side="left")
