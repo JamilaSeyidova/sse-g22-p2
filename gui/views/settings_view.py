@@ -110,20 +110,19 @@ class SettingsView(tk.Frame):
 
         frame1 = ttk.Frame(self)
         frame1.pack(pady=5)
-        ttk.Label(frame1, text="Timeout between repetitions (s):", style="TLabel").pack(side="left")
-        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between repetitions (s)", self.HELP_TEXTS["timeout_repetitions"])).pack(side="left", padx=5)
-        self.timeout_rep_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
-        self.timeout_rep_entry.pack(pady=5)
-        self.timeout_rep_entry.insert(0, "60")
-
-        frame1 = ttk.Frame(self)
-        frame1.pack(pady=5)
         ttk.Label(frame1, text="Timeout between tasks (s):", style="TLabel").pack(side="left")
         ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
         self.timeout_task_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
         self.timeout_task_entry.pack(pady=5)
-        self.timeout_task_entry.insert(0, "300")
-        
+        self.timeout_task_entry.insert(0, "60")
+
+        frame1 = ttk.Frame(self)
+        frame1.pack(pady=5)
+        ttk.Label(frame1, text="Timeout between repetitions (s):", style="TLabel").pack(side="left")
+        ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between repetitions (s)", self.HELP_TEXTS["timeout_repetitions"])).pack(side="left", padx=5)
+        self.timeout_rep_entry = ttk.Entry(self, style="TEntry", width=30, validate="key", validatecommand=(self.register(lambda P: P.isdigit() or P == ""), "%P"))
+        self.timeout_rep_entry.pack(pady=5)
+        self.timeout_rep_entry.insert(0, "300")        
 
 
         # Checkbox for hardware warmup

@@ -160,6 +160,8 @@ def run_task(task, output_dir):
 
     try:
         gradle_root = find_gradle_root()
+        if gradle_root is None:
+            gradle_root = repository
         result = subprocess.run(gradle_command, shell=True, capture_output=True, text=True, cwd=gradle_root)
 
         # Save the command output to a log file
