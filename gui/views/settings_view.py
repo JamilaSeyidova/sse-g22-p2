@@ -220,10 +220,10 @@ class SettingsView(tk.Frame):
         # Check if system is Windows
         if os.name == "nt":
             # Windows: use filtered dialog
-            filetypes = [("Gradle Build File", "*.gradle;*.gradle.kts"), ("All files", "*.*")]
+            filetypes = [("Gradle Build File", "*.gradle;*.gradle.kts"), ("All files", "*")]
         else:
             # macOS/Linux: show all files
-            filetypes = [("All files", "*.*")]
+            filetypes = [("All files", "*")]
 
         gradle_file = filedialog.askopenfilename(
             title="Pick a gradle.build file",
@@ -263,9 +263,9 @@ class SettingsView(tk.Frame):
         from tkinter import filedialog
 
         if os.name == 'nt':  # Windows
-            filetypes = [("Executables", "*.exe;*.out;*.sh;"), ("All files", "*.*")]
+            filetypes = [("Executables", "*.exe;*.out;*.sh;"), ("All files", "*")]
         else:  # macOS/Linux
-            filetypes = [("All files", "*.*")]
+            filetypes = [("All files", "*")]
 
         selected_file = filedialog.askopenfilename(
             title="Select the energibridge executable",

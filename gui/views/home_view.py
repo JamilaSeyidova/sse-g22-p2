@@ -26,7 +26,7 @@ class HomeView(tk.Frame):
             self,
             text="Go to Settings",
             command=lambda: [
-                controller.geometry("700x900"),  # Resize the window
+                controller.geometry("700x1000"),  # Resize the window
                 controller.show_frame("SettingsView")
             ]
         )
