@@ -149,7 +149,6 @@ class SettingsView(tk.Frame):
         frame1 = ttk.Frame(self)
         frame1.pack(pady=5)
         ttk.Label(frame1, text="Gradle task", style="TLabel").pack(side="left")
-        # ttk.Button(frame1, text="?", width=2, style="help.TButton", command=lambda: self.show_help("Timeout between tasks (s)", self.HELP_TEXTS["timeout_tasks"])).pack(side="left", padx=5)
 
         frame2 = ttk.Frame(self)
         frame2.pack(pady=1)
@@ -164,7 +163,7 @@ class SettingsView(tk.Frame):
 
         self.filter_entry = ttk.Entry(frame3, style="TEntry", width=30)
         self.filter_entry.pack(pady=6, side="left")
-        self.filter_entry.insert(0, "*")  # Wildcard by default
+        self.filter_entry.insert(0, "*")
 
         ttk.Button(frame3, text="Filter", width=7, style="help.TButton", command=lambda: self.updateTaskList()).pack(
             side="left", padx=5)
@@ -175,7 +174,7 @@ class SettingsView(tk.Frame):
         # Scrollable frame for task list
         container = ttk.Frame(self, height=150)
         container.pack(fill="x", pady=10, anchor='n')
-        container.pack_propagate(False)  # 💡 Important!
+        container.pack_propagate(False)  #  Important!
 
         canvas = tk.Canvas(container, bg="white", highlightthickness=0, height=300)
         canvas.pack(side="left", fill="both", expand=True)
@@ -195,8 +194,6 @@ class SettingsView(tk.Frame):
 
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
-
-        # container.pack(fill="both", expand=True) 
 
         # Mouse wheel scrolling
         def _on_mousewheel(event):
@@ -245,18 +242,6 @@ class SettingsView(tk.Frame):
         else:
             self.label.config(text="gradle.build file not found")
             self.run_button.config(state='disabled')
-
-
-    # def browse_folder_energibridge(self):
-    #     energibridge_path = filedialog.askopenfilename(title="Pick a file in the target folder", filetypes=[("Executables", "*.exe;*.out;*.sh;"), ("All files", "*.*")])
-    #     energibridge_path = set_energibridge_path(energibridge_path)
-    #     if energibridge_path:
-    #         self.label.config(text=f"Found: {energibridge_path}")
-    #         if not self.running:
-    #             self.run_button.config(state='normal')
-    #     else:
-    #         self.label.config(text="energibridge.exe not found")
-    #         self.run_button.config(state='disabled')
 
     def browse_folder_energibridge(self):
         import os
@@ -405,11 +390,6 @@ class SettingsView(tk.Frame):
         if len(task_list) == 0:
             messagebox.showerror("Input Error", "No tasks found")
 
-
-
-
-
-
     def check_result(self):
         try:
             # Try to get message from queue (non-blocking)
@@ -423,10 +403,6 @@ class SettingsView(tk.Frame):
         except queue.Empty:
             # If empty, check again after 1000ms
             self.after(1000, self.check_result)
-
-
-
-
 
     def show_help(self, title, message):
         help_window = tk.Toplevel(self)

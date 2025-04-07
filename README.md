@@ -32,7 +32,14 @@ source .venv/bin/activate
 # Windows (PowerShell)
 .venv\Scripts\Activate.ps1
 ```
+## Managing Dependencies
 
+To add or remove dependencies, use:
+
+```bash
+uv add <package-name>
+uv remove <package-name>
+```
 ---
 
 ## ⚡ EnergyBridge Setup (Required for Energy Measurement)
@@ -91,13 +98,13 @@ Here's what each field and button is used for:
   A custom name that will be used for the output CSV and internal labeling of the experiment. Choose something descriptive (e.g., `build_variants_test1`).
 
 - **Number of Iterations**  
-  Specifies how many times each selected build configuration should be repeated. A higher number (e.g., 5–10) ensures more reliable energy measurements.
-
-- **Timeout Between Repetitions (s)**  
-  Number of seconds to wait between each iteration of the experiment. Use this to cool down the system between builds and reduce measurement noise.
+  Specifies how many times each selected task configuration should be repeated. A higher number ensures more reliable energy measurements (default 30 for statistical significance).
 
 - **Timeout Between Tasks (s)**  
   When measuring individual Gradle tasks, this specifies how long the tool should wait between the execution of one task and the next. Helps isolate energy consumption per task.
+
+- **Timeout Between Repetitions (s)**  
+  Number of seconds to wait between each iteration of the experiment. Use this to cool down the system between builds and reduce measurement noise.
 
 - **Perform Hardware Warmup**  
   If checked, the tool will perform a warm-up phase to bring the hardware (especially CPU/GPU) to a consistent state before measuring energy usage. Recommended for more stable results.
@@ -108,27 +115,18 @@ Here's what each field and button is used for:
 
 ### 📁 File/Folder Selection
 
-- **Select Folder**  
-  Opens a file browser to select the **Gradle project directory**. Once a valid directory is selected:
-  - All available **Gradle Build tasks** are listed as checkboxes.
-  - You can select/deselect specific tasks to be executed and measured in the experiment.
-
 - **Select EnergiBridge Directory**  
   Prompts the user to select the folder where the `energibridge.exe` executable is located. This can be:
   - A **release version** downloaded from GitHub, typically found in `EnergyBridge/energibridge.exe`.
   - A **locally built version**, usually located at `EnergyBridge/target/release/energibridge.exe`.
 
+- **Select Folder**  
+  Opens a file browser to select the **Gradle project directory**. To choose the directory you have to select the **gradle.build or build.gradle.kts** inside. Once a valid directory is selected the following actions can be performed:
+  - Specify a Gradle command (default is build). In the launching prompt you can see the execution of: **gradle -your-command- --rerun-tasks --dry-run**. The list of tasks returned is then displayed as checkboxes.
+  - Filter tasks by name (default is "*" which selects all).
+  - Deselect all tasks shown.
+
 ---
-
-
-## ➕ Managing Dependencies
-
-To add or remove dependencies, use:
-
-```bash
-uv add <package-name>
-uv remove <package-name>
-```
 
 
 
